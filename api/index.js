@@ -1,6 +1,6 @@
 import Router from 'koa-router';
-import auth from './auth';
-import user from './user';
+// import auth from './auth';
+// import user from './user';
 
 import data from './data';
 
@@ -10,8 +10,8 @@ import discount from './discount';
 
 const api = new Router();
 
-api.use('/auth', auth.routes());
-api.use('/user', user.routes());
+// api.use('/auth', auth.routes());
+// api.use('/user', user.routes());
 
 api.use('/data', data.routes());
 

@@ -1,10 +1,10 @@
-import db from '../../models'
+//import db from '../../models'
 import {HttpError} from '../../lib/errorHandler';
 import {getRTMSDataSvcAptRentInfo} from '../../lib/parsing/openapi/crawling';
 
 
 
-```
+/*
 //거래 날짜
 <년>2020</년>
 <월>5</월>
@@ -34,6 +34,7 @@ crawlingData() : 크롤링
 preProcessing() : 데이터 전처리
 
 ```
+*/
 
 //코드 뼈대
 export const parsing = async ctx => {
@@ -48,9 +49,9 @@ export const testParsing = async ctx => {
     // 노원구 매물 2020/05 0페이지 
     const data = await getRTMSDataSvcAptRentInfo("11350","202005","0");
 
-    let items = data.body.items;
+    let items = data.items.item;
 
-    console.log(items.length);
+    console.log(items[0]);
 
     ctx.status = 200;
     ctx.body = {
@@ -58,6 +59,10 @@ export const testParsing = async ctx => {
     };
 }
 
+
+const preProcessing = async (items) => {
+    
+}
 
 
 // export const userInformation = async ctx => {
