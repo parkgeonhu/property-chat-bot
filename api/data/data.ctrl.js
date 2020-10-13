@@ -1,6 +1,6 @@
 //import db from '../../models'
-import {HttpError} from '../../lib/errorHandler';
-import {getRTMSDataSvcAptRentInfo} from '../../lib/parsing/openapi/crawling';
+import { HttpError } from '../../lib/errorHandler';
+import { getRTMSDataSvcAptRentInfo } from '../../lib/parsing/openapi/crawling';
 
 
 
@@ -47,21 +47,46 @@ export const parsing = async ctx => {
 
 export const testParsing = async ctx => {
     // 노원구 매물 2020/05 0페이지 
-    const data = await getRTMSDataSvcAptRentInfo("11350","202005","0");
+    const data = await getRTMSDataSvcAptRentInfo("11350", "202005", "0");
 
     let items = data.items.item;
 
-    console.log(items[0]);
+    console.log(items[0]['아파트']);
 
     ctx.status = 200;
-    ctx.body = {
-        "status" : "success"
-    };
+    ctx.body = preProcessing(items)
 }
 
 
-const preProcessing = async (items) => {
-    
+// var test = "     90,000,000";
+
+//       function atoi_deposit(str_deposit){
+//          var temp1 = str_deposit.trim();
+//          var temp2 = temp1.split(',');
+//          var int_deposit = parseInt(temp2[0]) * 1000;
+
+//          for(i=1; i < temp2.length; i++){
+//             int_deposit *= 1000;
+//          }
+
+//          return int_deposit;
+//       }
+
+//       test = atoi_deposit(test);
+
+//       alert(test);
+
+
+const preProcessing = (items) => {
+    let data = items.map(item => {
+        return{
+            name : item['아파트'],
+            build_date : item['건축년도'],
+            floor : item['층'],
+            bjd : item['법정동']
+        }
+    })
+    return data
 }
 
 
