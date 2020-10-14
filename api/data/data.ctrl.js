@@ -105,20 +105,18 @@ const preProcessing = async (items) => {
         })
     )
 
-    let idx=0;
-    let data = items.map(item => {
-        idx++;
+    let data = items.map((item, idx) => {
         return {
             name: item['아파트'],
             build_date: item['건축년도'],
             floor: item['층'],
             bjd: item['법정동'],
-            x : mapData[idx],
-            y : mapData[idx],
-            key : mapData[idx]
+            x : mapData[idx]['x'],
+            y : mapData[idx]['y'],
+            key : mapData[idx]['unique']
         }
     })
-    console.log(idx)
+    
     return data
 }
 
