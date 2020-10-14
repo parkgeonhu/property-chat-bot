@@ -54,7 +54,7 @@ export const testParsing = async ctx => {
     console.log(items[0]['아파트']);
 
     ctx.status = 200;
-    ctx.body = preProcessing(items)
+    ctx.body = await preProcessing(items)
 }
 
 
@@ -76,16 +76,49 @@ export const testParsing = async ctx => {
 
 //       alert(test);
 
+const getLngLat = async (item) => {
+    return new Promise((resolve, reject) => {
+        resolve(
+            {
+                unique : item['아파트'],
+                x: 20,
+                y: 10
+            }
+        );
+    })
+}
 
-const preProcessing = (items) => {
+
+const preProcessing = async (items) => {
+    let mapData = await Promise.all(
+        items.map(item => {
+            //let { x, y } = await getLngLat()
+            return getLngLat(item);
+
+            // return {
+            //     name: item['아파트'],
+            //     build_date: item['건축년도'],
+            //     floor: item['층'],
+            //     bjd: item['법정동'],
+            //     test : getLngLat()
+            // }
+        })
+    )
+
+    let idx=0;
     let data = items.map(item => {
-        return{
-            name : item['아파트'],
-            build_date : item['건축년도'],
-            floor : item['층'],
-            bjd : item['법정동']
+        idx++;
+        return {
+            name: item['아파트'],
+            build_date: item['건축년도'],
+            floor: item['층'],
+            bjd: item['법정동'],
+            x : mapData[idx],
+            y : mapData[idx],
+            key : mapData[idx]
         }
     })
+    console.log(idx)
     return data
 }
 
