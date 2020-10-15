@@ -1,6 +1,7 @@
 //import db from '../../models'
 import { HttpError } from '../../lib/errorHandler';
 import { getRTMSDataSvcAptRentInfo } from '../../lib/parsing/openapi/crawling';
+import { getKeywordInfo } from '../../lib/kakaoLocal';
 
 
 
@@ -58,25 +59,8 @@ export const testParsing = async ctx => {
 }
 
 
-// var test = "     90,000,000";
-
-//       function atoi_deposit(str_deposit){
-//          var temp1 = str_deposit.trim();
-//          var temp2 = temp1.split(',');
-//          var int_deposit = parseInt(temp2[0]) * 1000;
-
-//          for(i=1; i < temp2.length; i++){
-//             int_deposit *= 1000;
-//          }
-
-//          return int_deposit;
-//       }
-
-//       test = atoi_deposit(test);
-
-//       alert(test);
-
-const getLngLat = async (item) => {
+// async, await로 promise 객체 만들기
+const getLngLat = (item) => {
     return new Promise((resolve, reject) => {
         resolve(
             {
@@ -89,12 +73,60 @@ const getLngLat = async (item) => {
 }
 
 
+//queryList 얻어내기
+const getQueryList = (item) => {
+    let queryList=[]
+    return queryList;
+}
+
+const getLocationInfo = async (item) => {
+    //최적의 질의어로 상단, documents[0] 의 정보를 파싱하도록 한다.
+    let isValid=false;
+    let data;
+
+    const queryList = getQueryList();
+
+    // querylist중에 valid한 것만
+    for(query of queryList){
+        let tempData = await getKeywordInfo(query);
+        isValid = tempData.meta.total_count > 0 ? true : false; // 검색 결과가 0 초과면 valid 하다고 판단
+        if(isValid){
+            data = tempData.documents[0]
+            break;
+        }
+    }
+
+
+    if(isValid){
+        const address = data['address_name']
+        return {
+            x : data['x'],
+            y : data['y'],
+            is_valid : isValid,
+            address
+        }
+    }
+    else{
+        return {
+            is_valid : false
+        }
+    }
+}
+
+
 const preProcessing = async (items) => {
     let mapData = await Promise.all(
-        items.map(item => {
+        items.map(async item => {
             //let { x, y } = await getLngLat()
-            return getLngLat(item);
-
+            const value = await getLngLat(item);
+            return {
+                name: item['아파트'],
+                build_date: item['건축년도'],
+                floor: item['층'],
+                bjd: item['법정동'],
+                x: value['x'],
+                y: value['y'],
+            };
             // return {
             //     name: item['아파트'],
             //     build_date: item['건축년도'],
@@ -105,19 +137,19 @@ const preProcessing = async (items) => {
         })
     )
 
-    let data = items.map((item, idx) => {
-        return {
-            name: item['아파트'],
-            build_date: item['건축년도'],
-            floor: item['층'],
-            bjd: item['법정동'],
-            x : mapData[idx]['x'],
-            y : mapData[idx]['y'],
-            key : mapData[idx]['unique']
-        }
-    })
-    
-    return data
+    // let data = items.map((item, idx) => {
+    //     return {
+    //         name: item['아파트'],
+    //         build_date: item['건축년도'],
+    //         floor: item['층'],
+    //         bjd: item['법정동'],
+    //         x : mapData[idx]['x'],
+    //         y : mapData[idx]['y'],
+    //         key : mapData[idx]['unique']
+    //     }
+    // })
+
+    return mapData
 }
 
 
