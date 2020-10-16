@@ -21,15 +21,6 @@ import { getKeywordInfo } from '../../lib/kakaoLocal';
 <층>1</층>
 ```
 
-```
-우선 건축년도, 보증금액, 월세금액, 아파트 이름, 월세금액, 전용면적, 층은 db에 insert 하되,
-promise로 비동기 처리를 시도.
-1. insert 하기 전 법정동+아파트이름 조합한 것을 카카오맵에 질의.
-2. 거기서 나온 x,y 좌표는 db에 넣는 것을 대기
-3. 2에서 나온 정보 중 도로명 주소 또는 주소의 동만 추출하여 카카오 address에 질의
-4. 
-```
-
 ```testParsing 명세
 crawlingData() : 크롤링
 preProcessing() : 데이터 전처리
@@ -64,7 +55,7 @@ const getLngLat = (item) => {
     return new Promise((resolve, reject) => {
         resolve(
             {
-                unique : item['아파트'],
+                unique: item['아파트'],
                 x: 20,
                 y: 10
             }
@@ -73,42 +64,34 @@ const getLngLat = (item) => {
 }
 
 
-//queryList 얻어내기
-const getQueryList = (item) => {
-    let queryList=[]
-    return queryList;
-}
-
 const getLocationInfo = async (item) => {
-    //최적의 질의어로 상단, documents[0] 의 정보를 파싱하도록 한다.
-    let isValid=false;
+    //`법정동 지번`으로 질의, documents[0] 의 정보를 파싱하도록 한다.
+    let isValid = false;
     let data;
 
-    const queryList = getQueryList();
-
-    // querylist중에 valid한 것만
-    for(query of queryList){
-        let tempData = await getKeywordInfo(query);
-        isValid = tempData.meta.total_count > 0 ? true : false; // 검색 결과가 0 초과면 valid 하다고 판단
-        if(isValid){
-            data = tempData.documents[0]
-            break;
-        }
+    const query = `${item['bjd']} ${item['jibun']}`
+    let searchData = await getKeywordInfo(query);
+    isValid = searchData.meta.total_count > 0 ? true : false; // 검색 결과가 0 초과면 valid 하다고 판단
+    if (isValid) {
+        //추후 검색 후 documents 파싱할 때 다른 순서의 것을 가져올 수도 있음
+        data = searchData.documents[0]
+        break;
     }
 
-
-    if(isValid){
-        const address = data['address_name']
+    if (isValid) {
+        // 도로명 주소가 없는 경우가 있나?
+        const address = data['road_address_name']
         return {
-            x : data['x'],
-            y : data['y'],
-            is_valid : isValid,
+            name : data['place_name'],
+            x: data['x'],
+            y: data['y'],
+            is_valid: true,
             address
         }
     }
-    else{
+    else {
         return {
-            is_valid : false
+            is_valid: false
         }
     }
 }
@@ -124,16 +107,10 @@ const preProcessing = async (items) => {
                 build_date: item['건축년도'],
                 floor: item['층'],
                 bjd: item['법정동'],
+                jibun: item['지번'],
                 x: value['x'],
                 y: value['y'],
             };
-            // return {
-            //     name: item['아파트'],
-            //     build_date: item['건축년도'],
-            //     floor: item['층'],
-            //     bjd: item['법정동'],
-            //     test : getLngLat()
-            // }
         })
     )
 
@@ -152,42 +129,9 @@ const preProcessing = async (items) => {
     return mapData
 }
 
+const insertData = async (items) => {
+    for(item of items){
+        // db에 데이터 집어 넣는
 
-// export const userInformation = async ctx => {
-//     const {phone} = ctx.request.body;
-
-//     if (!phone) {
-//         console.log("내 정보 출력");
-//     }
-
-//     await db.User.find({
-//         where: {phone},
-//     });
-// };
-
-// export const register = async ctx => {
-//     const { phone, password, name, birthDate, army } = ctx.request.body;
-//     await db.User.findOrCreate({
-//         where: { phone },
-//         defaults: {
-//             phone,
-//             password: password,
-//             name,
-//             birthDate,
-//             isActive:true,
-//             isAdmin:false,
-//             army: (army === undefined) ? '육군' : army,
-//         }
-//     }).then((result) => {
-//         const [user, created] = result;
-//         if (created)
-//         {
-//             ctx.status = 201;
-//             ctx.body = user;
-//         }
-//         else
-//         {
-//             throw(new HttpError(400, "이미 사용자가 존재합니다."));
-//         }
-//     })
-// }
+    }
+}
