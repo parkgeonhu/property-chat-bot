@@ -11,12 +11,6 @@ module.exports = {
       name: {
         type: Sequelize.STRING
       },
-      deposit: {
-        type: Sequelize.INTEGER
-      },
-      monthly_rent: {
-        type: Sequelize.INTEGER
-      },
       x: {
         type: Sequelize.FLOAT
       },
@@ -33,6 +27,9 @@ module.exports = {
         type: Sequelize.BOOLEAN
       },
       cultural_facility: {
+        type: Sequelize.BOOLEAN
+      },
+      traditional_market: {
         type: Sequelize.BOOLEAN
       },
       address: {

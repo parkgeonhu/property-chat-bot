@@ -2,7 +2,7 @@
 import { HttpError } from '../../lib/errorHandler';
 import { getRTMSDataSvcAptRentInfo } from '../../lib/parsing/openapi/crawling';
 import { getKeywordInfo } from '../../lib/kakaoLocal';
-import * as surrounding from '../../lib/surroundingInfo';
+import * as surround from '../../lib/surroundingInfo';
 import db from '../../models'
 
 
@@ -50,6 +50,25 @@ export const testParsing = async ctx => {
     ctx.body = await preProcessing(items)
 }
 
+export const test20 = async ctx => {
+    // 노원구 매물 2020/05 0페이지 
+    const data = await getRTMSDataSvcAptRentInfo("11350", "202005", "0");
+
+    let items = data.items.item;
+
+    let test20items = items.slice(0, 11);
+
+    const result = await preProcessing(test20items);
+    await insertData(result)
+
+
+    ctx.status = 200;
+    ctx.body = {
+        status: "success"
+    }
+}
+
+
 
 // async, await로 promise 객체 만들기
 const getLngLat = (item) => {
@@ -70,13 +89,13 @@ const getLocationInfo = async (item) => {
     let isValid = false;
     let data;
 
-    const query = `${item['bjd']} ${item['jibun']}`
+    const query = `${item['법정동']} ${item['지번']}`
+    console.log(query)
     let searchData = await getKeywordInfo(query);
     isValid = searchData.meta.total_count > 0 ? true : false; // 검색 결과가 0 초과면 valid 하다고 판단
     if (isValid) {
         //추후 검색 후 documents 파싱할 때 다른 순서의 것을 가져올 수도 있음
         data = searchData.documents[0]
-        break;
     }
 
     if (isValid) {
@@ -102,28 +121,35 @@ const preProcessing = async (items) => {
     let mapData = await Promise.all(
         items.map(async item => {
             //let { x, y } = await getLngLat()
-            const value = await getLngLat(item);
+            const locationInfo = await getLocationInfo(item);
             return {
-                name: item['아파트'],
+                name: locationInfo['name'],
                 build_date: item['건축년도'],
                 floor: item['층'],
                 bjd: item['법정동'],
                 jibun: item['지번'],
                 deposit: item['보증금액'],
                 monthly_rent: item['월세금액'],
-                x: value['x'],
-                y: value['y'],
+                x: locationInfo['x'],
+                y: locationInfo['y'],
+                address: locationInfo['address']
             };
         })
     )
 
-    let result = mapData.map(async item => {
-        const surrounding = surrounding.isSatisfy(item['x'], item['y']);
-        return {
-            ...item,
-            surrounding
-        }
-    })
+
+
+    let result = await Promise.all(
+        mapData.map(async item => {
+            const surrounding = await surround.isSatisfy(item['x'], item['y']);
+            return {
+                ...item,
+                surrounding
+            }
+        })
+    )
+
+    // console.log(mapData)
     // let data = items.map((item, idx) => {
     //     return {
     //         name: item['아파트'],
@@ -140,25 +166,42 @@ const preProcessing = async (items) => {
 }
 
 const insertData = async (items) => {
-    for (item of items) {
+    for (let item of items) {
         //apt db에 정보가 있는지
-        const aptSearch = await db.Apt.findAll({ where: { address: itme['address'] } })
-        if (aptSearch.length > 0) {
+        const aptSearch = await db.Apt.findAll({ where: { address: item['address'] } })
+
+        let aptId = null
+
+        if (aptSearch.length == 0) {
             // subway : item['surrounding']['전통시장']['is_satisfied'],
-            await db.Apt.create({
+            let temp = await db.Apt.create({
                 name: item['name'],
-                deposit: item['deposit'],
-                monthly_rent: item['montly_rent'],
-                x: item['montly_rent'],
-                y: item['montly_rent'],
+                x: item['x'],
+                y: item['y'],
                 subway: item['surrounding']['지하철역']['is_satisfied'],
                 cultural_facility: item['surrounding']['문화시설']['is_satisfied'],
                 convenience_store: item['surrounding']['편의점']['is_satisfied'],
-                bjd: itme['bjd']
+                traditional_market: item['surrounding']['전통시장']['is_satisfied'],
+                bjd: item['bjd'],
+                address : item['address']
             })
+            aptId = temp.id
         }
 
-        
+        if (aptId == null) {
+            let temp = await db.Apt.findOne({ where: { address: item['address'] } })
+            aptId = temp.id
+        }
+
+
+        await db.Sale.create({
+            aptId,
+            deposit: item['deposit'],
+            monthly_rent: item['monthly_rent'],
+            bjd: item['bjd']
+        })
+
+
 
     }
 }

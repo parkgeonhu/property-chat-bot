@@ -10,20 +10,19 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      this.hasMany(models.sale);
+      this.hasMany(models.Sale);
       // define association here
     }
   };
   Apt.init({
     name: DataTypes.STRING,
-    deposit: DataTypes.INTEGER,
-    monthly_rent: DataTypes.INTEGER,
     x: DataTypes.FLOAT,
     y: DataTypes.FLOAT,
     subway: DataTypes.BOOLEAN,
     convenience_store: DataTypes.BOOLEAN,
     restaurant: DataTypes.BOOLEAN,
     cultural_facility: DataTypes.BOOLEAN,
+    traditional_market: DataTypes.BOOLEAN,
     address: DataTypes.STRING,
     bjd: DataTypes.STRING
   }, {

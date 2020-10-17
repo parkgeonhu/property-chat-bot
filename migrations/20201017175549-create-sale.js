@@ -9,8 +9,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       aptId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
+        type: Sequelize.INTEGER
       },
       name: {
         type: Sequelize.STRING

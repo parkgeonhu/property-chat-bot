@@ -5,6 +5,7 @@ import checkLoggedIn from '../../lib/checkLoggedIn';
 const data = new Router();
 
 data.get('/testParsing', dataCtrl.testParsing);
+data.get('/test20', dataCtrl.test20);
 //auth.get('/sample1', dataCtrl.sample1);
 //auth.post('/login', dataCtrl.login);
 

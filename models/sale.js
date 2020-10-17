@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      this.belongsTo(models.apt, {
+      this.belongsTo(models.Apt, {
         foreignKey: "aptId"
       })
     }
