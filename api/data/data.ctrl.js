@@ -2,7 +2,8 @@
 import { HttpError } from '../../lib/errorHandler';
 import { getRTMSDataSvcAptRentInfo } from '../../lib/parsing/openapi/crawling';
 import { getKeywordInfo } from '../../lib/kakaoLocal';
-
+import * as surrounding from '../../lib/surroundingInfo';
+import db from '../../models'
 
 
 /*
@@ -82,7 +83,7 @@ const getLocationInfo = async (item) => {
         // 도로명 주소가 없는 경우가 있나?
         const address = data['road_address_name']
         return {
-            name : data['place_name'],
+            name: data['place_name'],
             x: data['x'],
             y: data['y'],
             is_valid: true,
@@ -108,12 +109,21 @@ const preProcessing = async (items) => {
                 floor: item['층'],
                 bjd: item['법정동'],
                 jibun: item['지번'],
+                deposit: item['보증금액'],
+                monthly_rent: item['월세금액'],
                 x: value['x'],
                 y: value['y'],
             };
         })
     )
 
+    let result = mapData.map(async item => {
+        const surrounding = surrounding.isSatisfy(item['x'], item['y']);
+        return {
+            ...item,
+            surrounding
+        }
+    })
     // let data = items.map((item, idx) => {
     //     return {
     //         name: item['아파트'],
@@ -126,12 +136,29 @@ const preProcessing = async (items) => {
     //     }
     // })
 
-    return mapData
+    return result
 }
 
 const insertData = async (items) => {
-    for(item of items){
-        // db에 데이터 집어 넣는
+    for (item of items) {
+        //apt db에 정보가 있는지
+        const aptSearch = await db.Apt.findAll({ where: { address: itme['address'] } })
+        if (aptSearch.length > 0) {
+            // subway : item['surrounding']['전통시장']['is_satisfied'],
+            await db.Apt.create({
+                name: item['name'],
+                deposit: item['deposit'],
+                monthly_rent: item['montly_rent'],
+                x: item['montly_rent'],
+                y: item['montly_rent'],
+                subway: item['surrounding']['지하철역']['is_satisfied'],
+                cultural_facility: item['surrounding']['문화시설']['is_satisfied'],
+                convenience_store: item['surrounding']['편의점']['is_satisfied'],
+                bjd: itme['bjd']
+            })
+        }
+
+        
 
     }
 }

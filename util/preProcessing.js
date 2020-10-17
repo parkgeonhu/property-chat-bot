@@ -52,10 +52,12 @@ export const getAptQueryList = (item) => {
     return aptObj.getQueryList()
 }
 
+
+
 export const getRefinedPrice = (str_deposit) => {
-    var temp1 = str_deposit.trim();
-    var temp2 = temp1.split(',');
-    var int_deposit = parseInt(temp2[0]) * 1000;
+    let temp1 = str_deposit.trim();
+    let temp2 = temp1.split(',');
+    let int_deposit = parseInt(temp2[0]) * 10000;
 
     for (i = 1; i < temp2.length; i++) {
         int_deposit *= 1000;
@@ -63,3 +65,15 @@ export const getRefinedPrice = (str_deposit) => {
 
     return int_deposit;
 }
+
+// export const getRefinedMonthlyRent = (str_montly_rent) => {
+//     let temp1 = str_montly_rent.trim();
+//     let temp2 = temp1.split(',');
+//     let int_deposit = parseInt(temp2[0]) * 1000;
+
+//     for (i = 1; i < temp2.length; i++) {
+//         int_deposit *= 1000;
+//     }
+
+//     return int_deposit;
+// }

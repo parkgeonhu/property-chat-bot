@@ -1,0 +1,22 @@
+{
+  "편의점": {
+    "category_group_code": "CS2",
+    "radius": 500,
+    "statisfaction": 3
+  },
+  "지하철역": {
+    "category_group_code": "SW8",
+    "radius": 300,
+    "statisfaction": 3
+  },
+  "문화시설": {
+    "category_group_code": "CT1",
+    "radius": 800,
+    "statisfaction": 3
+  },
+  "전통시장": {
+    "keyword": "전통시장",
+    "radius": 1000,
+    "statisfaction": 1
+  }
+}
