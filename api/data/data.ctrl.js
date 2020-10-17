@@ -56,7 +56,7 @@ export const test20 = async ctx => {
 
     let items = data.items.item;
 
-    let test20items = items.slice(0, 11);
+    let test20items = items.slice(0, 10);
 
     const result = await preProcessing(test20items);
     await insertData(result)
@@ -66,21 +66,6 @@ export const test20 = async ctx => {
     ctx.body = {
         status: "success"
     }
-}
-
-
-
-// async, await로 promise 객체 만들기
-const getLngLat = (item) => {
-    return new Promise((resolve, reject) => {
-        resolve(
-            {
-                unique: item['아파트'],
-                x: 20,
-                y: 10
-            }
-        );
-    })
 }
 
 
@@ -94,8 +79,17 @@ const getLocationInfo = async (item) => {
     let searchData = await getKeywordInfo(query);
     isValid = searchData.meta.total_count > 0 ? true : false; // 검색 결과가 0 초과면 valid 하다고 판단
     if (isValid) {
-        //추후 검색 후 documents 파싱할 때 다른 순서의 것을 가져올 수도 있음
-        data = searchData.documents[0]
+        // 아파트만 파싱하도록.
+        isValid = false;
+        for (let document of searchData.documents) {
+            let category_name = document.category_name.split(' > ')
+            if (category_name[2] == '아파트') {
+                data = document
+                isValid = true;
+                break;
+            }
+        }
+
     }
 
     if (isValid) {
@@ -132,35 +126,24 @@ const preProcessing = async (items) => {
                 monthly_rent: item['월세금액'],
                 x: locationInfo['x'],
                 y: locationInfo['y'],
-                address: locationInfo['address']
+                address: locationInfo['address'],
+                is_valid: locationInfo['is_valid']
             };
         })
     )
 
-
+    console.log(mapData)
 
     let result = await Promise.all(
-        mapData.map(async item => {
-            const surrounding = await surround.isSatisfy(item['x'], item['y']);
-            return {
-                ...item,
-                surrounding
-            }
-        })
+        mapData.filter(el => el.is_valid)
+            .map(async item => {
+                const surrounding = await surround.isSatisfy(item['x'], item['y']);
+                return {
+                    ...item,
+                    surrounding
+                }
+            })
     )
-
-    // console.log(mapData)
-    // let data = items.map((item, idx) => {
-    //     return {
-    //         name: item['아파트'],
-    //         build_date: item['건축년도'],
-    //         floor: item['층'],
-    //         bjd: item['법정동'],
-    //         x : mapData[idx]['x'],
-    //         y : mapData[idx]['y'],
-    //         key : mapData[idx]['unique']
-    //     }
-    // })
 
     return result
 }
@@ -183,7 +166,7 @@ const insertData = async (items) => {
                 convenience_store: item['surrounding']['편의점']['is_satisfied'],
                 traditional_market: item['surrounding']['전통시장']['is_satisfied'],
                 bjd: item['bjd'],
-                address : item['address']
+                address: item['address']
             })
             aptId = temp.id
         }
