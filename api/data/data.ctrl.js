@@ -7,6 +7,9 @@ import db from '../../models'
 import * as seoulBorough from '../../data/seoul.borough.json'
 
 
+var fs = require('fs');
+
+
 /*
 //거래 날짜
 <년>2020</년>
@@ -35,6 +38,7 @@ preProcessing() : 데이터 전처리
 export const parsing = async ctx => {
 
     const seoul_borough = Object.entries(seoulBorough);
+    let saleData;
 
     for (let i = 0; i < seoul_borough.length; i += 5) {
         const seoul_borough_sliced = seoul_borough.slice(i, i + 5)
@@ -47,22 +51,26 @@ export const parsing = async ctx => {
                     const data = await getRTMSDataSvcAptRentInfo(lawd_cd, "202005", "0");
 
                     const items = data.items.item;
-                    console.log(items)
                     if (items == undefined) {
                         return Promise.resolve();
                     }
-                    let limitData = items;
+                    saleData = items.slice();
                     if (data.totalCount > limit) {
-                        limitData = items.slice(0, limit);
+                        for (let item of items) {
+                            saleData.push(item)
+                        }
                     }
-
-                    const result = await preProcessing(limitData);
-                    await insertData(result)
-
-
                 })
         )
     }
+
+    const refinedData = await preProcessing(saleData);
+
+    fs.writeFile('log.txt', JSON.stringify(refinedData), 'utf8', function (err) {
+        console.log('log 파일 쓰기 완료');
+    });
+
+    await insertData(refinedData)
     // await Promise.all(
     //     Object.entries(seoulBorough)
     //         .map(async borough => {
@@ -116,6 +124,11 @@ export const test20 = async ctx => {
     let test20items = items.slice(0, 10);
 
     const result = await preProcessing(test20items);
+
+    fs.writeFile('log.txt', JSON.stringify(result), 'utf8', function (err) {
+        console.log('log 파일 쓰기 완료');
+    });
+
     await insertData(result)
 
 
@@ -178,6 +191,9 @@ const preProcessing = async (items) => {
         await Promise.all(
             items_sliced.map(async item => {
                 const locationInfo = await getLocationInfo(item);
+                if (locationInfo['is_valid'] == false) {
+                    return Promise.resolve();
+                }
                 mapData.push({
                     name: locationInfo['name'],
                     build_date: item['건축년도'],
@@ -188,21 +204,21 @@ const preProcessing = async (items) => {
                     monthly_rent: item['월세금액'],
                     x: locationInfo['x'],
                     y: locationInfo['y'],
-                    address: locationInfo['address'],
-                    is_valid: locationInfo['is_valid']
+                    address: locationInfo['address']
                 })
             })
         )
     }
 
+    console.log(mapData)
+
 
     let data = [];
 
-    for (let i = 0; i < mapData.length; i += 5) {
-        const items_sliced = mapData.slice(i, i + 5)
+    for (let i = 0; i < mapData.length; i += 3) {
+        const items_sliced = mapData.slice(i, i + 3)
         await Promise.all(
             items_sliced
-                .filter(el => el.is_valid)
                 .map(async item => {
                     const surrounding = await surround.isSatisfy(item['x'], item['y']);
                     data.push({
@@ -236,7 +252,7 @@ const preProcessing = async (items) => {
     //     })
     // )
 
-    
+
 
     // let result = await Promise.all(
     //     mapData
