@@ -33,12 +33,60 @@ preProcessing() : 데이터 전처리
 
 //코드 뼈대
 export const parsing = async ctx => {
-    //
 
-    for (const [key, value] of Object.entries(seoulBorough)) {
-        console.log(`${key}: ${value}`);
+    const seoul_borough = Object.entries(seoulBorough);
+
+    for (let i = 0; i < seoul_borough.length; i += 5) {
+        const seoul_borough_sliced = seoul_borough.slice(i, i + 5)
+
+        await Promise.all(
+            seoul_borough_sliced
+                .map(async borough => {
+                    const lawd_cd = borough[1]['lawd_cd']
+                    const limit = borough['parsing_limit']
+                    const data = await getRTMSDataSvcAptRentInfo(lawd_cd, "202005", "0");
+
+                    const items = data.items.item;
+                    console.log(items)
+                    if (items == undefined) {
+                        return Promise.resolve();
+                    }
+                    let limitData = items;
+                    if (data.totalCount > limit) {
+                        limitData = items.slice(0, limit);
+                    }
+
+                    const result = await preProcessing(limitData);
+                    await insertData(result)
+
+
+                })
+        )
     }
-    // const data = await getRTMSDataSvcAptRentInfo();
+    // await Promise.all(
+    //     Object.entries(seoulBorough)
+    //         .map(async borough => {
+    //             const lawd_cd = borough[1]['lawd_cd']
+    //             const limit = borough['parsing_limit']
+    //             const data = await getRTMSDataSvcAptRentInfo(lawd_cd, "202005", "0");
+
+    //             const items = data.items.item;
+    //             console.log(items)
+    //             if (items == undefined) {
+    //                 return Promise.resolve();
+    //             }
+    //             let limitData = items;
+    //             if (data.totalCount > limit) {
+    //                 limitData = items.slice(0, limit);
+    //             }
+
+    //             const result = await preProcessing(limitData);
+    //             await insertData(result)
+
+
+    //         })
+    // )
+
     ctx.status = 200;
     ctx.body = {
         status: "success"
@@ -84,7 +132,7 @@ const getLocationInfo = async (item) => {
     let data;
 
     const query = `${item['법정동']} ${item['지번']}`
-    console.log(query)
+    //console.log(query)
     let searchData = await getKeywordInfo(query);
     isValid = searchData.meta.total_count > 0 ? true : false; // 검색 결과가 0 초과면 valid 하다고 판단
     if (isValid) {
@@ -121,40 +169,86 @@ const getLocationInfo = async (item) => {
 
 
 const preProcessing = async (items) => {
-    let mapData = await Promise.all(
-        items.map(async item => {
-            //let { x, y } = await getLngLat()
-            const locationInfo = await getLocationInfo(item);
-            return {
-                name: locationInfo['name'],
-                build_date: item['건축년도'],
-                floor: item['층'],
-                bjd: item['법정동'],
-                jibun: item['지번'],
-                deposit: item['보증금액'],
-                monthly_rent: item['월세금액'],
-                x: locationInfo['x'],
-                y: locationInfo['y'],
-                address: locationInfo['address'],
-                is_valid: locationInfo['is_valid']
-            };
-        })
-    )
 
-    console.log(mapData)
+    let mapData = []
 
-    let result = await Promise.all(
-        mapData.filter(el => el.is_valid)
-            .map(async item => {
-                const surrounding = await surround.isSatisfy(item['x'], item['y']);
-                return {
-                    ...item,
-                    surrounding
-                }
+    for (let i = 0; i < items.length; i += 5) {
+        const items_sliced = items.slice(i, i + 5)
+
+        await Promise.all(
+            items_sliced.map(async item => {
+                const locationInfo = await getLocationInfo(item);
+                mapData.push({
+                    name: locationInfo['name'],
+                    build_date: item['건축년도'],
+                    floor: item['층'],
+                    bjd: item['법정동'],
+                    jibun: item['지번'],
+                    deposit: item['보증금액'],
+                    monthly_rent: item['월세금액'],
+                    x: locationInfo['x'],
+                    y: locationInfo['y'],
+                    address: locationInfo['address'],
+                    is_valid: locationInfo['is_valid']
+                })
             })
-    )
+        )
+    }
 
-    return result
+
+    let data = [];
+
+    for (let i = 0; i < mapData.length; i += 5) {
+        const items_sliced = mapData.slice(i, i + 5)
+        await Promise.all(
+            items_sliced
+                .filter(el => el.is_valid)
+                .map(async item => {
+                    const surrounding = await surround.isSatisfy(item['x'], item['y']);
+                    data.push({
+                        ...item,
+                        surrounding
+                    })
+                })
+        )
+    }
+
+    return data
+
+
+    // let mapData = await Promise.all(
+    //     items.map(async item => {
+    //         //let { x, y } = await getLngLat()
+    //         const locationInfo = await getLocationInfo(item);
+    //         return {
+    //             name: locationInfo['name'],
+    //             build_date: item['건축년도'],
+    //             floor: item['층'],
+    //             bjd: item['법정동'],
+    //             jibun: item['지번'],
+    //             deposit: item['보증금액'],
+    //             monthly_rent: item['월세금액'],
+    //             x: locationInfo['x'],
+    //             y: locationInfo['y'],
+    //             address: locationInfo['address'],
+    //             is_valid: locationInfo['is_valid']
+    //         };
+    //     })
+    // )
+
+    
+
+    // let result = await Promise.all(
+    //     mapData
+    //         .filter(el => el.is_valid)
+    //         .map(async item => {
+    //             const surrounding = await surround.isSatisfy(item['x'], item['y']);
+    //             return {
+    //                 ...item,
+    //                 surrounding
+    //             }
+    //         })
+    // )
 }
 
 const insertData = async (items) => {
