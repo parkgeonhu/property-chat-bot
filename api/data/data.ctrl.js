@@ -38,7 +38,8 @@ preProcessing() : 데이터 전처리
 export const parsing = async ctx => {
 
     const seoul_borough = Object.entries(seoulBorough);
-    let saleData;
+    const limit = seoulBorough['parsing_limit']
+    let saleData=[];
 
     for (let i = 0; i < seoul_borough.length; i += 5) {
         const seoul_borough_sliced = seoul_borough.slice(i, i + 5)
@@ -47,22 +48,30 @@ export const parsing = async ctx => {
             seoul_borough_sliced
                 .map(async borough => {
                     const lawd_cd = borough[1]['lawd_cd']
-                    const limit = borough['parsing_limit']
+                    
+                    console.log(limit)
                     const data = await getRTMSDataSvcAptRentInfo(lawd_cd, "202005", "0");
 
                     const items = data.items.item;
                     if (items == undefined) {
                         return Promise.resolve();
                     }
-                    saleData = items.slice();
+
+                    let limit_items;
                     if (data.totalCount > limit) {
-                        for (let item of items) {
-                            saleData.push(item)
-                        }
+                        limit_items = items.slice(0, limit);
+                    }else{
+                        limit_items = items.slice();
+                    }
+
+                    for(let item of limit_items){
+                        saleData.push(item)
                     }
                 })
         )
     }
+
+    console.log(saleData)
 
     const refinedData = await preProcessing(saleData);
 
@@ -268,7 +277,38 @@ const preProcessing = async (items) => {
 }
 
 const insertData = async (items) => {
-    for (let item of items) {
+
+    // User.bulkCreate([
+    //     { username: 'barfooz', isAdmin: true },
+    //     { username: 'foo', isAdmin: true },
+    //     { username: 'bar', isAdmin: false }
+    //   ], { returning: true }) // will return all columns for each row inserted
+    //   .then((result) => {
+    //     console.log(result);
+    // });
+
+    // const bulkData = items.map(async item => {
+    //     const aptSearch = await db.Apt.findOne({ where: { address: item['address'] } })
+    //     if (aptSearch.length == 0) {
+    //         // subway : item['surrounding']['전통시장']['is_satisfied'],
+    //         return {
+    //             name: item['name'],
+    //             x: item['x'],
+    //             y: item['y'],
+    //             subway: item['surrounding']['지하철역']['is_satisfied'],
+    //             cultural_facility: item['surrounding']['문화시설']['is_satisfied'],
+    //             convenience_store: item['surrounding']['편의점']['is_satisfied'],
+    //             traditional_market: item['surrounding']['전통시장']['is_satisfied'],
+    //             bjd: item['bjd'],
+    //             address: item['address']
+    //         }
+    //     }else{
+    //         let temp = await db.Apt.findOne({ where: { address: item['address'] } })
+    //         aptId = temp.id
+    //     }
+    // })
+
+    for await (let item of items) {
         //apt db에 정보가 있는지
         const aptSearch = await db.Apt.findAll({ where: { address: item['address'] } })
 
@@ -303,7 +343,7 @@ const insertData = async (items) => {
             bjd: item['bjd']
         })
 
-
-
+        console.log(item)
     }
 }
+
