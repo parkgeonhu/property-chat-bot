@@ -7,7 +7,7 @@
   "지하철역": {
     "category_group_code": "SW8",
     "radius": 300,
-    "statisfaction": 3
+    "statisfaction": 1
   },
   "문화시설": {
     "category_group_code": "CT1",

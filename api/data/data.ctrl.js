@@ -4,6 +4,7 @@ import { getRTMSDataSvcAptRentInfo } from '../../lib/parsing/openapi/crawling';
 import { getKeywordInfo } from '../../lib/kakaoLocal';
 import * as surround from '../../lib/surroundingInfo';
 import db from '../../models'
+import * as seoulBorough from '../../data/seoul.borough.json'
 
 
 /*
@@ -29,17 +30,25 @@ preProcessing() : 데이터 전처리
 ```
 */
 
+
 //코드 뼈대
 export const parsing = async ctx => {
     //
-    const data = await getRTMSDataSvcAptRentInfo();
 
+    for (const [key, value] of Object.entries(seoulBorough)) {
+        console.log(`${key}: ${value}`);
+    }
+    // const data = await getRTMSDataSvcAptRentInfo();
+    ctx.status = 200;
+    ctx.body = {
+        status: "success"
+    }
 }
 
 // 파싱 테스트
 
 export const testParsing = async ctx => {
-    // 노원구 매물 2020/05 0페이지 
+    // 노원구 매물 2020/05 0페이지
     const data = await getRTMSDataSvcAptRentInfo("11350", "202005", "0");
 
     let items = data.items.item;
