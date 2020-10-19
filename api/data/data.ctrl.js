@@ -6,7 +6,7 @@ import * as seoulBorough from '../../data/seoul.borough.json'
 import * as constant from '../../data/constant.json'
 import * as parsingKakao from '../../lib/parsing/kakao'
 import * as util from '../../util'
-import {getRefinedPrice} from '../../util/preProcessing'
+
 
 
 /*
@@ -32,11 +32,36 @@ preProcessing() : 데이터 전처리
 ```
 */
 
-const getSaleData = () => {
+const getQuery = (item) => {
+    return `${item['bjd']} ${item['jibun']}`
+}
 
+const getRefinedSales = (items) => {
+    let refinedSales = items.map(item => {
+        return {
+            build_date: item['건축년도'],
+            floor: item['층'],
+            bjd: item['법정동'].trim(),
+            jibun: item['지번'],
+            deposit: util.getRefinedPrice(item['보증금액']),
+            monthly_rent: util.getRefinedPrice(item['월세금액'])
+        }
+    })
+    return refinedSales;
+}
+
+const getSalesByJibun = (items, jibun) => {
+    let sales=items.filter(el => el['jibun']==jibun)
+    return sales;
+}
+
+const getSales1 = async () => {
+    //[TO-DO] 왜 default 가 object.entries에 있ㄴ느지
     const seoul_borough = Object.entries(seoulBorough);
     const limit = constant['parsing_limit']
     let saleData = [];
+
+    console.log(seoulBorough)
 
     for (let i = 0; i < seoul_borough.length; i += 5) {
         const seoul_borough_sliced = seoul_borough.slice(i, i + 5)
@@ -45,15 +70,25 @@ const getSaleData = () => {
             seoul_borough_sliced
                 .map(async borough => {
                     const lawd_cd = borough[1]['lawd_cd']
-
+                    if (lawd_cd == undefined) {
+                        return Promise.resolve();
+                    }
                     const data = await getRTMSDataSvcAptRentInfo(lawd_cd, "202005", "0");
-                    const items = data.items.item;
-
+                    const items = getRefinedSales(data.items.item);  // 매물들
+                    console.log(items)
                     if (items == undefined) {
                         return Promise.resolve();
                     }
 
-                    let limit_items = items.slice(0, limit);;
+                    const uniqueItems = util.getUniqueArray(items, 'jibun')
+                    const refinedItems = uniqueItems.map(item => {
+                        return {
+                            query: getQuery(item),
+                            sales : getSalesByJibun(items, item['jibun'])
+                        }
+                    })
+
+                    let limit_items = refinedItems.slice(0, limit);
 
                     for (let item of limit_items) {
                         saleData.push(item)
@@ -61,7 +96,19 @@ const getSaleData = () => {
                 })
         )
     }
+    console.log(saleData);
+
+    return saleData
 }
+
+export const getSaleDataTest = async ctx => {
+    await getSales1()
+    ctx.status = 200;
+    ctx.body = {
+        status: "success12"
+    }
+}
+
 
 
 //코드 뼈대
