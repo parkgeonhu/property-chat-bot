@@ -1,14 +1,11 @@
 //import db from '../../models'
 import { HttpError } from '../../lib/errorHandler';
-import { getRTMSDataSvcAptRentInfo } from '../../lib/parsing/openapi/crawling';
-import { getKeywordInfo } from '../../lib/kakaoLocal';
-import * as surround from '../../lib/surroundingInfo';
+import { getRTMSDataSvcAptRentInfo } from '../../lib/crawling/openapi';
 import db from '../../models'
 import * as seoulBorough from '../../data/seoul.borough.json'
-
-
-var fs = require('fs');
-
+import * as constant from '../../data/constant.json'
+import * as parsingKakao from '../../lib/parsing/kakao'
+import * as util from '../../util'
 
 /*
 //거래 날짜
@@ -38,7 +35,7 @@ preProcessing() : 데이터 전처리
 export const parsing = async ctx => {
 
     const seoul_borough = Object.entries(seoulBorough);
-    const limit = seoulBorough['parsing_limit']
+    const limit = constant['parsing_limit']
     let saleData=[];
 
     for (let i = 0; i < seoul_borough.length; i += 5) {
@@ -49,20 +46,14 @@ export const parsing = async ctx => {
                 .map(async borough => {
                     const lawd_cd = borough[1]['lawd_cd']
                     
-                    console.log(limit)
                     const data = await getRTMSDataSvcAptRentInfo(lawd_cd, "202005", "0");
-
                     const items = data.items.item;
+
                     if (items == undefined) {
                         return Promise.resolve();
                     }
 
-                    let limit_items;
-                    if (data.totalCount > limit) {
-                        limit_items = items.slice(0, limit);
-                    }else{
-                        limit_items = items.slice();
-                    }
+                    let limit_items= items.slice(0, limit);;
 
                     for(let item of limit_items){
                         saleData.push(item)
@@ -71,38 +62,11 @@ export const parsing = async ctx => {
         )
     }
 
-    console.log(saleData)
-
     const refinedData = await preProcessing(saleData);
 
-    fs.writeFile('log.txt', JSON.stringify(refinedData), 'utf8', function (err) {
-        console.log('log 파일 쓰기 완료');
-    });
+    util.writeJSONData("parsing", refinedData);
 
     await insertData(refinedData)
-    // await Promise.all(
-    //     Object.entries(seoulBorough)
-    //         .map(async borough => {
-    //             const lawd_cd = borough[1]['lawd_cd']
-    //             const limit = borough['parsing_limit']
-    //             const data = await getRTMSDataSvcAptRentInfo(lawd_cd, "202005", "0");
-
-    //             const items = data.items.item;
-    //             console.log(items)
-    //             if (items == undefined) {
-    //                 return Promise.resolve();
-    //             }
-    //             let limitData = items;
-    //             if (data.totalCount > limit) {
-    //                 limitData = items.slice(0, limit);
-    //             }
-
-    //             const result = await preProcessing(limitData);
-    //             await insertData(result)
-
-
-    //         })
-    // )
 
     ctx.status = 200;
     ctx.body = {
@@ -118,8 +82,6 @@ export const testParsing = async ctx => {
 
     let items = data.items.item;
 
-    console.log(items[0]['아파트']);
-
     ctx.status = 200;
     ctx.body = await preProcessing(items)
 }
@@ -134,9 +96,7 @@ export const test20 = async ctx => {
 
     const result = await preProcessing(test20items);
 
-    fs.writeFile('log.txt', JSON.stringify(result), 'utf8', function (err) {
-        console.log('log 파일 쓰기 완료');
-    });
+    util.writeJSONData("parsing", result);
 
     await insertData(result)
 
@@ -148,132 +108,18 @@ export const test20 = async ctx => {
 }
 
 
-const getLocationInfo = async (item) => {
-    //`법정동 지번`으로 질의, documents[0] 의 정보를 파싱하도록 한다.
-    let isValid = false;
-    let data;
-
-    const query = `${item['법정동']} ${item['지번']}`
-    //console.log(query)
-    let searchData = await getKeywordInfo(query);
-    isValid = searchData.meta.total_count > 0 ? true : false; // 검색 결과가 0 초과면 valid 하다고 판단
-    if (isValid) {
-        // 아파트만 파싱하도록.
-        isValid = false;
-        for (let document of searchData.documents) {
-            let category_name = document.category_name.split(' > ')
-            if (category_name[2] == '아파트') {
-                data = document
-                isValid = true;
-                break;
-            }
-        }
-
-    }
-
-    if (isValid) {
-        // 도로명 주소가 없는 경우가 있나?
-        const address = data['road_address_name']
-        return {
-            name: data['place_name'],
-            x: data['x'],
-            y: data['y'],
-            is_valid: true,
-            address
-        }
-    }
-    else {
-        return {
-            is_valid: false
-        }
-    }
-}
-
-
 const preProcessing = async (items) => {
 
-    let mapData = []
+    let mapData=await parsingKakao.getMapData(items)
 
-    for (let i = 0; i < items.length; i += 5) {
-        const items_sliced = items.slice(i, i + 5)
-
-        await Promise.all(
-            items_sliced.map(async item => {
-                const locationInfo = await getLocationInfo(item);
-                if (locationInfo['is_valid'] == false) {
-                    return Promise.resolve();
-                }
-                mapData.push({
-                    name: locationInfo['name'],
-                    build_date: item['건축년도'],
-                    floor: item['층'],
-                    bjd: item['법정동'],
-                    jibun: item['지번'],
-                    deposit: item['보증금액'],
-                    monthly_rent: item['월세금액'],
-                    x: locationInfo['x'],
-                    y: locationInfo['y'],
-                    address: locationInfo['address']
-                })
-            })
-        )
-    }
-
+    
     console.log(mapData)
 
+    
+    let surroundingData = await parsingKakao.getSurroundingData(mapData)
+    
 
-    let data = [];
-
-    for (let i = 0; i < mapData.length; i += 3) {
-        const items_sliced = mapData.slice(i, i + 3)
-        await Promise.all(
-            items_sliced
-                .map(async item => {
-                    const surrounding = await surround.isSatisfy(item['x'], item['y']);
-                    data.push({
-                        ...item,
-                        surrounding
-                    })
-                })
-        )
-    }
-
-    return data
-
-
-    // let mapData = await Promise.all(
-    //     items.map(async item => {
-    //         //let { x, y } = await getLngLat()
-    //         const locationInfo = await getLocationInfo(item);
-    //         return {
-    //             name: locationInfo['name'],
-    //             build_date: item['건축년도'],
-    //             floor: item['층'],
-    //             bjd: item['법정동'],
-    //             jibun: item['지번'],
-    //             deposit: item['보증금액'],
-    //             monthly_rent: item['월세금액'],
-    //             x: locationInfo['x'],
-    //             y: locationInfo['y'],
-    //             address: locationInfo['address'],
-    //             is_valid: locationInfo['is_valid']
-    //         };
-    //     })
-    // )
-
-
-
-    // let result = await Promise.all(
-    //     mapData
-    //         .filter(el => el.is_valid)
-    //         .map(async item => {
-    //             const surrounding = await surround.isSatisfy(item['x'], item['y']);
-    //             return {
-    //                 ...item,
-    //                 surrounding
-    //             }
-    //         })
-    // )
+    return surroundingData
 }
 
 const insertData = async (items) => {
@@ -347,3 +193,40 @@ const insertData = async (items) => {
     }
 }
 
+
+
+/*
+    // let mapData = await Promise.all(
+    //     items.map(async item => {
+    //         //let { x, y } = await getLngLat()
+    //         const locationInfo = await getLocationInfo(item);
+    //         return {
+    //             name: locationInfo['name'],
+    //             build_date: item['건축년도'],
+    //             floor: item['층'],
+    //             bjd: item['법정동'],
+    //             jibun: item['지번'],
+    //             deposit: item['보증금액'],
+    //             monthly_rent: item['월세금액'],
+    //             x: locationInfo['x'],
+    //             y: locationInfo['y'],
+    //             address: locationInfo['address'],
+    //             is_valid: locationInfo['is_valid']
+    //         };
+    //     })
+    // )
+
+
+
+    // let result = await Promise.all(
+    //     mapData
+    //         .filter(el => el.is_valid)
+    //         .map(async item => {
+    //             const surrounding = await surround.isSatisfy(item['x'], item['y']);
+    //             return {
+    //                 ...item,
+    //                 surrounding
+    //             }
+    //         })
+    // )
+*/

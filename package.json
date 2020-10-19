@@ -19,6 +19,7 @@
     "koa-router": "^9.1.0",
     "koa2-cors": "^2.0.6",
     "moment": "^2.27.0",
+    "mysql2": "^2.2.5",
     "sequelize": "6.3.4",
     "sequelize-cli": "^6.2.0",
     "xml2js": "^0.4.23"
