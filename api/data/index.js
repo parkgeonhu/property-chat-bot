@@ -8,7 +8,7 @@ data.get('/testParsing', dataCtrl.testParsing);
 data.get('/test20', dataCtrl.test20);
 data.get('/parsing', dataCtrl.parsing);
 
-data.get('/s1', dataCtrl.getSaleDataTest);
+data.get('/test', dataCtrl.getSaleDataTest);
 
 //auth.get('/sample1', dataCtrl.sample1);
 //auth.post('/login', dataCtrl.login);

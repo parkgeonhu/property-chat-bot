@@ -51,7 +51,7 @@ const getRefinedSales = (items) => {
 }
 
 const getSalesByJibun = (items, jibun) => {
-    let sales=items.filter(el => el['jibun']==jibun)
+    let sales = items.filter(el => el['jibun'] == jibun)
     return sales;
 }
 
@@ -84,7 +84,7 @@ const getSales1 = async () => {
                     const refinedItems = uniqueItems.map(item => {
                         return {
                             query: getQuery(item),
-                            sales : getSalesByJibun(items, item['jibun'])
+                            sales: getSalesByJibun(items, item['jibun'])
                         }
                     })
 
@@ -96,13 +96,73 @@ const getSales1 = async () => {
                 })
         )
     }
-    console.log(saleData);
+
+    util.writeJSONData("test", saleData);
 
     return saleData
 }
 
+
+const insertDataTEST = async (items) => {
+
+    for await (let item of items) {
+        //apt db에 정보가 있는지
+        const aptSearch = await db.Apt.findAll({ where: { address: item['address'] } })
+
+        let aptId = null
+
+        if (aptSearch.length == 0){
+            // subway : item['surrounding']['전통시장']['is_satisfied'],
+            let temp = await db.Apt.create({
+                name: item['name'],
+                x: item['x'],
+                y: item['y'],
+                subway: item['surrounding']['지하철역']['is_satisfied'],
+                cultural_facility: item['surrounding']['문화시설']['is_satisfied'],
+                convenience_store: item['surrounding']['편의점']['is_satisfied'],
+                traditional_market: item['surrounding']['전통시장']['is_satisfied'],
+                bjd: item['bjd'],
+                address: item['address']
+            })
+            aptId = temp.id
+        }
+
+        if (aptId == null) {
+            let temp = await db.Apt.findOne({ where: { address: item['address'] } })
+            aptId = temp.id
+        }
+
+        for await (let sale of item['sales']) {
+            await db.Sale.create({
+                aptId,
+                deposit: sale['deposit'],
+                monthly_rent: sale['monthly_rent'],
+                bjd: sale['bjd']
+            })
+        }
+    }
+}
+
+const preProcessingTEST = async (items) => {
+
+    let mapData = await parsingKakao.getMapDataTEST(items)
+
+
+    console.log(mapData)
+
+
+    let surroundingData = await parsingKakao.getSurroundingData(mapData)
+
+
+    return surroundingData
+}
+
+
+
 export const getSaleDataTest = async ctx => {
-    await getSales1()
+    let test = await getSales1()
+    let test1 = await preProcessingTEST(test)
+    await insertDataTEST(test1)
     ctx.status = 200;
     ctx.body = {
         status: "success12"
@@ -201,6 +261,9 @@ const preProcessing = async (items) => {
 
     return surroundingData
 }
+
+
+
 
 const insertData = async (items) => {
 
