@@ -6,6 +6,8 @@ import * as seoulBorough from '../../data/seoul.borough.json'
 import * as constant from '../../data/constant.json'
 import * as parsingKakao from '../../lib/parsing/kakao'
 import * as util from '../../util'
+import {getRefinedPrice} from '../../util/preProcessing'
+
 
 /*
 //거래 날짜
@@ -30,13 +32,11 @@ preProcessing() : 데이터 전처리
 ```
 */
 
-
-//코드 뼈대
-export const parsing = async ctx => {
+const getSaleData = () => {
 
     const seoul_borough = Object.entries(seoulBorough);
     const limit = constant['parsing_limit']
-    let saleData=[];
+    let saleData = [];
 
     for (let i = 0; i < seoul_borough.length; i += 5) {
         const seoul_borough_sliced = seoul_borough.slice(i, i + 5)
@@ -45,7 +45,7 @@ export const parsing = async ctx => {
             seoul_borough_sliced
                 .map(async borough => {
                     const lawd_cd = borough[1]['lawd_cd']
-                    
+
                     const data = await getRTMSDataSvcAptRentInfo(lawd_cd, "202005", "0");
                     const items = data.items.item;
 
@@ -53,9 +53,42 @@ export const parsing = async ctx => {
                         return Promise.resolve();
                     }
 
-                    let limit_items= items.slice(0, limit);;
+                    let limit_items = items.slice(0, limit);;
 
-                    for(let item of limit_items){
+                    for (let item of limit_items) {
+                        saleData.push(item)
+                    }
+                })
+        )
+    }
+}
+
+
+//코드 뼈대
+export const parsing = async ctx => {
+
+    const seoul_borough = Object.entries(seoulBorough);
+    const limit = constant['parsing_limit']
+    let saleData = [];
+
+    for (let i = 0; i < seoul_borough.length; i += 5) {
+        const seoul_borough_sliced = seoul_borough.slice(i, i + 5)
+
+        await Promise.all(
+            seoul_borough_sliced
+                .map(async borough => {
+                    const lawd_cd = borough[1]['lawd_cd']
+
+                    const data = await getRTMSDataSvcAptRentInfo(lawd_cd, "202005", "0");
+                    const items = data.items.item;
+
+                    if (items == undefined) {
+                        return Promise.resolve();
+                    }
+
+                    let limit_items = items.slice(0, limit);;
+
+                    for (let item of limit_items) {
                         saleData.push(item)
                     }
                 })
@@ -110,14 +143,14 @@ export const test20 = async ctx => {
 
 const preProcessing = async (items) => {
 
-    let mapData=await parsingKakao.getMapData(items)
+    let mapData = await parsingKakao.getMapData(items)
 
-    
+
     console.log(mapData)
 
-    
+
     let surroundingData = await parsingKakao.getSurroundingData(mapData)
-    
+
 
     return surroundingData
 }
@@ -188,8 +221,6 @@ const insertData = async (items) => {
             monthly_rent: item['monthly_rent'],
             bjd: item['bjd']
         })
-
-        console.log(item)
     }
 }
 

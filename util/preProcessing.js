@@ -53,15 +53,10 @@ export const getAptQueryList = (item) => {
 }
 
 
-
-export const getRefinedPrice = (str_deposit) => {
-    let temp1 = str_deposit.trim();
+export const getRefinedPrice = (str) => {
+    let temp1 = str.trim();
     let temp2 = temp1.split(',');
-    let int_deposit = parseInt(temp2[0]) * 10000;
-
-    for (i = 1; i < temp2.length; i++) {
-        int_deposit *= 1000;
-    }
+    let int_deposit = parseInt(temp2[0]);
 
     return int_deposit;
 }

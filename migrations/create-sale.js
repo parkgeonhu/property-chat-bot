@@ -11,9 +11,6 @@ module.exports = {
       aptId: {
         type: Sequelize.INTEGER
       },
-      name: {
-        type: Sequelize.STRING
-      },
       deposit: {
         type: Sequelize.INTEGER
       },
