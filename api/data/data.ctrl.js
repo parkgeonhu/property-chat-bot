@@ -61,8 +61,6 @@ const getSales1 = async () => {
     const limit = constant['parsing_limit']
     let saleData = [];
 
-    console.log(seoulBorough)
-
     for (let i = 0; i < seoul_borough.length; i += 5) {
         const seoul_borough_sliced = seoul_borough.slice(i, i + 5)
 
@@ -73,9 +71,21 @@ const getSales1 = async () => {
                     if (lawd_cd == undefined) {
                         return Promise.resolve();
                     }
-                    const data = await getRTMSDataSvcAptRentInfo(lawd_cd, "202005", "0");
-                    const items = getRefinedSales(data.items.item);  // 매물들
-                    console.log(items)
+                    
+                    let items=[]
+                    let pages=[0,1,2]
+                    for await (let page of pages){
+                        const data = await getRTMSDataSvcAptRentInfo(lawd_cd, "202005", page);
+                        const saleItems = getRefinedSales(data.items.item);  // 매물들
+                        for (let item of saleItems){
+                            items.push(item)
+                        }
+                        if (items == undefined) {
+                            return Promise.resolve();
+                        }
+                    }
+
+                    // const items = getRefinedSales(data.items.item);  // 매물들
                     if (items == undefined) {
                         return Promise.resolve();
                     }
@@ -84,7 +94,7 @@ const getSales1 = async () => {
                     const refinedItems = uniqueItems.map(item => {
                         return {
                             query: getQuery(item),
-                            sales: getSalesByJibun(items, item['jibun'])
+                            sales: getSalesByJibun(items, item['jibun']).slice(0, 5)
                         }
                     })
 
@@ -98,6 +108,7 @@ const getSales1 = async () => {
     }
 
     util.writeJSONData("test", saleData);
+    console.log(saleData.length)
 
     return saleData
 }
@@ -266,36 +277,6 @@ const preProcessing = async (items) => {
 
 
 const insertData = async (items) => {
-
-    // User.bulkCreate([
-    //     { username: 'barfooz', isAdmin: true },
-    //     { username: 'foo', isAdmin: true },
-    //     { username: 'bar', isAdmin: false }
-    //   ], { returning: true }) // will return all columns for each row inserted
-    //   .then((result) => {
-    //     console.log(result);
-    // });
-
-    // const bulkData = items.map(async item => {
-    //     const aptSearch = await db.Apt.findOne({ where: { address: item['address'] } })
-    //     if (aptSearch.length == 0) {
-    //         // subway : item['surrounding']['전통시장']['is_satisfied'],
-    //         return {
-    //             name: item['name'],
-    //             x: item['x'],
-    //             y: item['y'],
-    //             subway: item['surrounding']['지하철역']['is_satisfied'],
-    //             cultural_facility: item['surrounding']['문화시설']['is_satisfied'],
-    //             convenience_store: item['surrounding']['편의점']['is_satisfied'],
-    //             traditional_market: item['surrounding']['전통시장']['is_satisfied'],
-    //             bjd: item['bjd'],
-    //             address: item['address']
-    //         }
-    //     }else{
-    //         let temp = await db.Apt.findOne({ where: { address: item['address'] } })
-    //         aptId = temp.id
-    //     }
-    // })
 
     for await (let item of items) {
         //apt db에 정보가 있는지
