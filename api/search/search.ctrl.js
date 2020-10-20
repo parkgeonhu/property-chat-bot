@@ -4,10 +4,10 @@ import * as answerInfo from '../../data/answer.info.json'
 const { Op } = require("sequelize");
 
 const getUserInputByType = (paramKey, paramValue) => {
-    try{
+    try {
         const info = answerInfo[paramKey]
         const type = info['type']
-    }catch(err){
+    } catch (err) {
         return;
     }
     const info = answerInfo[paramKey]
@@ -34,23 +34,89 @@ const getUserInputByType = (paramKey, paramValue) => {
     return result;
 }
 
-const parsingParams = (params) => {
-    for (let key of Object.keys(params)) {
-        // if (answerInfo[key]['is_where']) {
-        //     console.log(getUserInputByType(key, params[key]))
-        // }
-        console.log(getUserInputByType(key, params[key]))
+const pushConditionDict = (target, conditionDict) => {
+    for (const [key, value] of Object.entries(conditionDict)) {
+        target[key] = value
     }
+}
+
+const parsingParams = (params) => {
+    let whereCondition = {};
+    let userCondition = {};
+    for (let key of Object.keys(params)) {
+        const isWhere = answerInfo[key] != undefined ? answerInfo[key]['is_where'] : 'no'
+        if (isWhere == 'no') {
+            continue;
+        }
+        const condition = getUserInputByType(key, params[key])
+        if (condition == undefined) {
+            continue;
+        }
+        if (isWhere) {
+            pushConditionDict(whereCondition, condition)
+        }
+        else {
+            pushConditionDict(userCondition, condition)
+        }
+        // console.log(condition)
+    }
+    return {
+        whereCondition,
+        userCondition
+    }
+}
+
+const getWHERESequelize = (whereCondition) => {
+    let result = {}
+    let exceptConditions = ['deposit', 'monthly_rent']
+    for (let conditionKey of Object.keys(whereCondition)) {
+        // let [key, value] = Object.entries(whereCondition[conditionKey])[0];
+        if (exceptConditions.find(el => el == conditionKey) == undefined) {
+            result[conditionKey] = whereCondition[conditionKey]
+        }
+    }
+
+    
+    result[`$Sales.deposit$`] = { [Op.lte]: whereCondition['deposit'] }
+    result[`$Sales.monthly_rent$`] = { [Op.lte]: whereCondition['monthly_rent'] }
+    result['$Sales.bjd$'] = "월계동"
+
+
+    // let exceptConditions = ['deposit', 'monthly_rent']
+    // for (let condition of whereCondition) {
+    //     let [key, value] = Object.entries(condition)[0];
+    //     if (exceptConditions.find(el => el == key) != undefined) {
+    //         result[key] = value
+    //     }
+    //     else{
+    //         result[`$Sales.${key}$`] = { [Op.gte]: 3000 }
+    //     }
+
+    // }
+    return result;
 }
 
 
 export const test = async ctx => {
     const params = sampleRequest.action.params;
 
-    parsingParams(params)
+    const conditions=parsingParams(params)
+    console.log(conditions["whereCondition"])
+    const where=getWHERESequelize(conditions["whereCondition"])
+
+    const result = await db.Apt.findAll({
+        where,
+        include: [{
+            model: db.Sale,
+            as: 'Sales'
+        }]
+    })
+    // .then(users => {
+    //     console.log(JSON.stringify(users));
+    // })
 
     ctx.status = 200;
-    ctx.body = {}
+    ctx.body = JSON.stringify(result)
 }
 
 
@@ -62,7 +128,7 @@ export const index = async ctx => {
         where: {
             subway: true,
             '$Sales.bjd$': '월계동',
-            '$Sales.deposit$': { [Op.gte]: 3000 }
+            '$Sales.deposit$': { [Op.lte]: 3000 }
         },
         include: [{
             model: db.Sale,

@@ -26,7 +26,7 @@
             "commute_location": "미아동",
             "monthly_rent": "{\"amount\": 0, \"unit\": \"원\"}",
             "commute_type": "대중교통",
-            "deposit": "{\"amount\": 130000000, \"unit\": \"원\"}",
+            "deposit": "{\"amount\": 30000, \"unit\": \"원\"}",
             "deal_type": "전세",
             "phone": "01012345678"
         },

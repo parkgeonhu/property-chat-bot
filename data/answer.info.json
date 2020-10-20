@@ -39,16 +39,16 @@
                 "item_name" : "30~60분",
                 "condition_name" : "commute_time",
                 "condition_value" : {
-                    "gte" : 15,
-                    "lte" : 30
+                    "gte" : 30,
+                    "lte" : 60
                 }
             },
             {
                 "item_name" : "상관없음",
                 "condition_name" : "commute_time",
                 "condition_value" : {
-                    "gte" : 15,
-                    "lte" : 30
+                    "gte" : 60,
+                    "lte" : 9000
                 }
             }
         ]
@@ -71,7 +71,7 @@
             },
             {
                 "item_name" : "문화/영화 보기",
-                "condition_name" : "restaurant",
+                "condition_name" : "cultulral_facility",
                 "condition_value" : true
             },
             {
