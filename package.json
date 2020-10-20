@@ -21,8 +21,7 @@
     "moment": "^2.27.0",
     "mysql2": "^2.2.5",
     "sequelize": "6.3.4",
-    "sequelize-cli": "^6.2.0",
-    "xml2js": "^0.4.23"
+    "sequelize-cli": "^6.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.11.1",
