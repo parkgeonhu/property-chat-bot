@@ -1,0 +1,120 @@
+{
+    "bot": {
+        "id": "5f70591c0eb01426c6186ccd",
+        "name": "구해줘홈즈"
+    },
+    "intent": {
+        "id": "5f8e58d0981c4a425a85eda9",
+        "name": "집 검색",
+        "extra": {
+            "reason": {
+                "code": 0,
+                "message": "OK"
+            }
+        }
+    },
+    "action": {
+        "id": "5f7200dad6da9e3f5a34a74c",
+        "name": "사용자 입력 정보 전송 스킬",
+        "params": {
+            "school": "많았으면",
+            "market": "전통시장",
+            "commute_time": "15~30분",
+            "build_date": "새로 지어진 집",
+            "subway": " 딱 맞게",
+            "hobby": "집에서 쉬기",
+            "commute_location": "미아동",
+            "monthly_rent": "{\"amount\": 0, \"unit\": \"원\"}",
+            "commute_type": "대중교통",
+            "deposit": "{\"amount\": 130000000, \"unit\": \"원\"}",
+            "deal_type": "전세",
+            "phone": "01012345678"
+        },
+        "detailParams": {
+            "school": {
+                "groupName": "",
+                "origin": "많았으면",
+                "value": "많았으면"
+            },
+            "market": {
+                "groupName": "",
+                "origin": "전통시장",
+                "value": "전통시장"
+            },
+            "commute_time": {
+                "groupName": "",
+                "origin": "15~30분",
+                "value": "15~30분"
+            },
+            "build_date": {
+                "groupName": "",
+                "origin": "새로 지어진 집",
+                "value": "새로 지어진 집"
+            },
+            "subway": {
+                "groupName": "",
+                "origin": "딱 맞게",
+                "value": "딱 맞게"
+            },
+            "hobby": {
+                "groupName": "",
+                "origin": "집에서 쉬기",
+                "value": "집에서 쉬기"
+            },
+            "commute_location": {
+                "groupName": "",
+                "origin": "미아동",
+                "value": "미아동"
+            },
+            "montly_rent": {
+                "groupName": "",
+                "origin": "0원",
+                "value": "{\"amount\": 0, \"unit\": \"원\"}"
+            },
+            "commute_type": {
+                "groupName": "",
+                "origin": "대중교통",
+                "value": "대중교통"
+            },
+            "deposit": {
+                "groupName": "",
+                "origin": "13000만원",
+                "value": "{\"amount\": 130000000, \"unit\": \"원\"}"
+            },
+            "deal_type": {
+                "groupName": "",
+                "origin": "전세",
+                "value": "전세"
+            },
+            "phone": {
+                "groupName": "",
+                "origin": "01012345678",
+                "value": "01012345678"
+            }
+        },
+        "clientExtra": {}
+    },
+    "userRequest": {
+        "block": {
+            "id": "5f8e58d0981c4a425a85eda9",
+            "name": "집 검색"
+        },
+        "user": {
+            "id": "b77192a43b05c69da7efb2a88ab145ce7bc50922c2ffbb8a950f8aa471e7384884",
+            "type": "botUserKey",
+            "properties": {
+                "botUserKey": "b77192a43b05c69da7efb2a88ab145ce7bc50922c2ffbb8a950f8aa471e7384884",
+                "plusfriendUserKey": "P4h9kBk58e6F",
+                "bot_user_key": "b77192a43b05c69da7efb2a88ab145ce7bc50922c2ffbb8a950f8aa471e7384884",
+                "plusfriend_user_key": "P4h9kBk58e6F"
+            }
+        },
+        "utterance": "집 검색해줘",
+        "params": {
+            "surface": "Kakaotalk.plusfriend"
+        },
+        "lang": "ko",
+        "timezone": "Asia/Seoul"
+    },
+    "contexts": []
+}

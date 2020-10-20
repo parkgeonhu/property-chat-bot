@@ -1,0 +1,95 @@
+{
+    "phone" : {
+        "type" : "text",
+        "is_where" : false,
+        "condition_name" : "phone"
+    },
+
+    "commute_type" : {
+        "type" : "choose",
+        "is_where" : false,
+        "list" : [
+            {
+                "item_name" : "대중교통",
+                "condition_name" : "commute_type",
+                "condition_value" : "transit"
+                
+            },
+            {
+                "item_name" : "자동차",
+                "condition_name" : "commute_type",
+                "condition_value" : "driving"
+            }
+        ]
+    },
+
+    "commute_time" : {
+        "type" : "choose",
+        "is_where" : false, 
+        "list" : [
+            {
+                "item_name" : "15~30분",
+                "condition_name" : "commute_time",
+                "condition_value" : {
+                    "gte" : 15,
+                    "lte" : 30
+                }
+            },
+            {
+                "item_name" : "30~60분",
+                "condition_name" : "commute_time",
+                "condition_value" : {
+                    "gte" : 15,
+                    "lte" : 30
+                }
+            },
+            {
+                "item_name" : "상관없음",
+                "condition_name" : "commute_time",
+                "condition_value" : {
+                    "gte" : 15,
+                    "lte" : 30
+                }
+            }
+        ]
+    },
+
+    "commute_location" : {
+        "type" : "text",
+        "is_where" : false,
+        "condition_name" : "commute_location"
+    },
+
+    "hobby" : {
+        "type" : "choose",
+        "is_where" : true,
+        "list" : [
+            {
+                "item_name" : "맛집 탐방",
+                "condition_name" : "restaurant",
+                "condition_value" : true
+            },
+            {
+                "item_name" : "문화/영화 보기",
+                "condition_name" : "restaurant",
+                "condition_value" : true
+            },
+            {
+                "item_name" : "집에서 쉬기",
+                "condition_name" : "convenience_store",
+                "condition_value" : true
+            }
+        ]
+    },
+    "deposit" : {
+        "type" : "currency",
+        "is_where":true,
+        "condition_name" : "deposit"
+    },
+    "monthly_rent" : {
+        "type" : "currency",
+        "is_where":true,
+        "condition_name" : "monthly_rent"
+    }
+    
+}

@@ -1,7 +1,7 @@
 ## req, res 예시
 ### req
 ```shell
-curl --location --request GET 'https://maps.googleapis.com/maps/api/directions/json?origin=37.63906582026493,127.07703045060357&destination=37.6107638961532,126.996969239236&mode=transit&key=AIzaSyD2gG5pQmaMSmlw2CMhM9-PvhbZNB5LQQU' \
+curl --location --request GET 'https://maps.googleapis.com/maps/api/directions/json?origin=37.63906582026493,127.07703045060357&destination=37.6107638961532,126.996969239236&mode=transit&key={key}' \
 ```
 
 ### res
