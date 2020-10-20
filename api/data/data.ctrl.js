@@ -71,18 +71,19 @@ const getSales1 = async () => {
                     if (lawd_cd == undefined) {
                         return Promise.resolve();
                     }
-                    
-                    let items=[]
-                    let pages=[0,1,2]
-                    for await (let page of pages){
+
+                    let items = []
+                    let pages = [0, 1, 2]
+                    for await (let page of pages) {
                         const data = await getRTMSDataSvcAptRentInfo(lawd_cd, "202005", page);
-                        const saleItems = getRefinedSales(data.items.item);  // 매물들
-                        for (let item of saleItems){
-                            items.push(item)
-                        }
-                        if (items == undefined) {
+                        if (data == undefined || data.items.item==undefined) {
                             return Promise.resolve();
                         }
+                        const saleItems = getRefinedSales(data.items.item);  // 매물들
+                        for (let item of saleItems) {
+                            items.push(item)
+                        }
+
                     }
 
                     // const items = getRefinedSales(data.items.item);  // 매물들
@@ -90,19 +91,28 @@ const getSales1 = async () => {
                         return Promise.resolve();
                     }
 
-                    const uniqueItems = util.getUniqueArray(items, 'jibun')
-                    const refinedItems = uniqueItems.map(item => {
-                        return {
-                            query: getQuery(item),
-                            sales: getSalesByJibun(items, item['jibun']).slice(0, 5)
+                    // 법정동 기준으로 필터링
+                    for (let bjd of borough[1]['bjd']) {
+                        const items_filteredBybjd = items.filter(el => el.bjd==bjd)
+                        const uniqueItems = util.getUniqueArray(items_filteredBybjd, 'jibun')
+
+                        util.writeJSONData(bjd, uniqueItems)
+
+                        const refinedItems = uniqueItems.map(item => {
+                            return {
+                                query: getQuery(item),
+                                sales: getSalesByJibun(items, item['jibun']).slice(0, 5)
+                            }
+                        })
+
+                        let limit_items = refinedItems.slice(0, limit);
+
+                        for (let item of limit_items) {
+                            saleData.push(item)
                         }
-                    })
 
-                    let limit_items = refinedItems.slice(0, limit);
-
-                    for (let item of limit_items) {
-                        saleData.push(item)
                     }
+
                 })
         )
     }
@@ -122,7 +132,7 @@ const insertDataTEST = async (items) => {
 
         let aptId = null
 
-        if (aptSearch.length == 0){
+        if (aptSearch.length == 0) {
             // subway : item['surrounding']['전통시장']['is_satisfied'],
             let temp = await db.Apt.create({
                 name: item['name'],

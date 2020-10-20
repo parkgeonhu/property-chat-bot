@@ -18,7 +18,6 @@ module.exports = (sequelize, DataTypes) => {
   };
   Sale.init({
     aptId: DataTypes.INTEGER,
-    name: DataTypes.STRING,
     deposit: DataTypes.INTEGER,
     monthly_rent: DataTypes.INTEGER,
     bjd: DataTypes.STRING

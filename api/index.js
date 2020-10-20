@@ -3,6 +3,8 @@ import Router from 'koa-router';
 // import user from './user';
 
 import data from './data';
+import search from './search';
+
 
 import px from './px';
 import food from './food';
@@ -14,6 +16,8 @@ const api = new Router();
 // api.use('/user', user.routes());
 
 api.use('/data', data.routes());
+api.use('/search', search.routes());
+
 
 // api.use('/px', px.routes());
 // api.use('/food', food.routes());
