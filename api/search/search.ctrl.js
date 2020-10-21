@@ -1,6 +1,7 @@
 import db from '../../models'
 import * as sampleRequest from './expect_request.json'
 import * as answerInfo from '../../data/answer.info.json'
+import * as duration from '../../lib/parsing/duration'
 const { Op } = require("sequelize");
 
 const getUserInputByType = (paramKey, paramValue) => {
@@ -111,13 +112,25 @@ export const test = async ctx => {
             as: 'Sales'
         }]
     })
-    // .then(users => {
-    //     console.log(JSON.stringify(users));
-    // })
 
     ctx.status = 200;
     ctx.body = JSON.stringify(result)
 }
+
+export const durationTest = async ctx => {
+
+    const driving = await duration.getDrivingDuration(127.07703045060357,37.63906582026493, 126.996969239236, 37.6107638961532)
+    const transit = await duration.getTransitDuration(127.07703045060357,37.63906582026493, 126.996969239236, 37.6107638961532)
+
+    console.log(driving, transit)
+    
+    ctx.status = 200;
+    ctx.body = {
+        driving,
+        transit
+    }
+}
+
 
 
 

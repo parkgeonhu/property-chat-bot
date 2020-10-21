@@ -5,6 +5,8 @@ const search = new Router();
 
 search.get('/', searchCtrl.index);
 search.get('/test', searchCtrl.test);
+search.get('/duration', searchCtrl.durationTest);
+
 
 
 export default search;
