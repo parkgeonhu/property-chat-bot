@@ -25,7 +25,7 @@
 
     "commute_time" : {
         "type" : "choose",
-        "is_where" : false, 
+        "is_where" : false,
         "list" : [
             {
                 "item_name" : "15~30분",
@@ -70,7 +70,7 @@
                 "condition_value" : true
             },
             {
-                "item_name" : "문화/영화 보기",
+                "item_name" : "전시/영화 보기",
                 "condition_name" : "cultulral_facility",
                 "condition_value" : true
             },
@@ -81,11 +81,99 @@
             }
         ]
     },
+
+    "deal_type" : {
+        "type" : "choose",
+        "is_where" : true,
+        "list" : [
+            {
+                "item_name" : "월세",
+                "condition_name" : "deal_type",
+                "condition_value" : "월세"
+            },
+            {
+                "item_name" : "전세",
+                "condition_name" : "deal_type",
+                "condition_value" : "전세"
+            }
+        ]
+    },
+
+    "market" : {
+        "type" : "choose",
+        "is_where" : true,
+        "list" : [
+            {
+                "item_name" : "전통시장",
+                "condition_name" : "traditional_market",
+                "condition_value" : true
+                
+            },
+            {
+                "item_name" : "대형마트",
+                "condition_name" : "traditional_market",
+                "condition_value" : false
+            }
+        ]
+    },
+
+    "school" : {
+        "type" : "choose",
+        "is_where" : true,
+        "list" : [
+            {
+                "item_name" : "많았으면",
+                "condition_name" : "school",
+                "condition_value" : true
+            },
+            {
+                "item_name" : "적었으면",
+                "condition_name" : "school",
+                "condition_value" : true
+            }
+        ]
+    },
+
+    "build_date" : {
+        "type" : "choose",
+        "is_where" : true,
+        "list" : [
+            {
+                "item_name" : "새로 지어진 집",
+                "condition_name" : "new",
+                "condition_value" : true
+            },
+            {
+                "item_name" : "오래됐지만 타 조건이 좋은",
+                "condition_name" : "new",
+                "condition_value" : false
+            }
+        ]
+    },
+
+    "subway" : {
+        "type" : "choose",
+        "is_where" : true,
+        "list" : [
+            {
+                "item_name" : "딱 맞게",
+                "condition_name" : "subway",
+                "condition_value" : true
+            },
+            {
+                "item_name" : "딱 맞게",
+                "condition_name" : "subway",
+                "condition_value" : true
+            }
+        ]
+    },
+
     "deposit" : {
         "type" : "currency",
         "is_where":true,
         "condition_name" : "deposit"
     },
+
     "monthly_rent" : {
         "type" : "currency",
         "is_where":true,

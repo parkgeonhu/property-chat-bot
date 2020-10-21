@@ -35,7 +35,7 @@ const getUserInputByType = (paramKey, paramValue) => {
     return result;
 }
 
-const pushConditionDict = (target, conditionDict) => {
+const pushConditionToDict = (target, conditionDict) => {
     for (const [key, value] of Object.entries(conditionDict)) {
         target[key] = value
     }
@@ -54,10 +54,10 @@ const parsingParams = (params) => {
             continue;
         }
         if (isWhere) {
-            pushConditionDict(whereCondition, condition)
+            pushConditionToDict(whereCondition, condition)
         }
         else {
-            pushConditionDict(userCondition, condition)
+            pushConditionToDict(userCondition, condition)
         }
         // console.log(condition)
     }
@@ -102,6 +102,8 @@ export const test = async ctx => {
     const params = sampleRequest.action.params;
 
     const conditions=parsingParams(params)
+    console.log(conditions)
+
     console.log(conditions["whereCondition"])
     const where=getWHERESequelize(conditions["whereCondition"])
 
