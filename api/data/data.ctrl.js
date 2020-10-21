@@ -14,13 +14,22 @@ const getQuery = (item) => {
 
 const getRefinedSales = (items) => {
     let refinedSales = items.map(item => {
+        let deposit=util.getRefinedPrice(item['보증금액'])
+        let monthly_rent=util.getRefinedPrice(item['월세금액'])
+        let deal_type = "전세"
+
+        if(monthly_rent!=0){
+            deal_type = "월세"
+        }
+
         return {
             build_date: item['건축년도'],
             floor: item['층'],
             bjd: item['법정동'].trim(),
             jibun: item['지번'],
-            deposit: util.getRefinedPrice(item['보증금액']),
-            monthly_rent: util.getRefinedPrice(item['월세금액'])
+            deposit,
+            monthly_rent,
+            deal_type
         }
     })
     return refinedSales;
@@ -139,7 +148,8 @@ const insertData = async (items) => {
                 aptId,
                 deposit: sale['deposit'],
                 monthly_rent: sale['monthly_rent'],
-                bjd: sale['bjd']
+                bjd: sale['bjd'],
+                deal_type : sale['deal_type']
             })
         }
     }

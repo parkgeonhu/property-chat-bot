@@ -18,7 +18,6 @@ module.exports = (sequelize, DataTypes) => {
     name: DataTypes.STRING,
     x: DataTypes.FLOAT,
     y: DataTypes.FLOAT,
-    deal_type : DataTypes.STRING,
     school : DataTypes.BOOLEAN,
     subway: DataTypes.BOOLEAN,
     convenience_store: DataTypes.BOOLEAN,
