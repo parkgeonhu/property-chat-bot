@@ -147,6 +147,17 @@ export const getSchoolNumber = async ctx => {
 }
 
 
+export const getHashTag = async ctx => {
+
+    const hastagExample = {
+        "민대인" : "뚝배기"
+    }
+    
+    ctx.status = 200;
+    ctx.body = hastagExample
+}
+
+
 
 export const index = async ctx => {
     // const params = ctx.request.body.action.detailParams;
