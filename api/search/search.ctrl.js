@@ -2,6 +2,7 @@ import db from '../../models'
 import * as sampleRequest from './expect_request.json'
 import * as answerInfo from '../../data/answer.info.json'
 import * as duration from '../../lib/parsing/duration'
+import { isSatisfySC } from '../../lib/surroundingInfo';
 const { Op } = require("sequelize");
 
 const getUserInputByType = (paramKey, paramValue) => {
@@ -134,16 +135,26 @@ export const durationTest = async ctx => {
 }
 
 
+export const getSchoolNumber = async ctx => {
+
+    console.log(await isSatisfySC(127.07703045060357,37.63906582026493))
+    
+    ctx.status = 200;
+    ctx.body = {
+        "status" : "success"
+    }
+}
+
 
 
 export const index = async ctx => {
-    const params = ctx.request.body.action.detailParams;
+    // const params = ctx.request.body.action.detailParams;
 
     const result = await db.Apt.findAll({
         where: {
             subway: true,
             '$Sales.bjd$': '월계동',
-            '$Sales.deposit$': { [Op.lte]: 3000 }
+
         },
         include: [{
             model: db.Sale,

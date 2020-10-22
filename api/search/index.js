@@ -7,6 +7,9 @@ search.get('/', searchCtrl.index);
 search.get('/test', searchCtrl.test);
 search.get('/duration', searchCtrl.durationTest);
 
+search.get('/school', searchCtrl.getSchoolNumber);
+
+
 
 
 export default search;
