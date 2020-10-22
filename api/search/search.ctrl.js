@@ -70,7 +70,7 @@ const parsingParams = (params) => {
 
 const getWHERESequelize = (whereCondition) => {
     let result = {}
-    let exceptConditions = ['deposit', 'monthly_rent']
+    let exceptConditions = ['deposit', 'monthly_rent','deal_type']
     for (let conditionKey of Object.keys(whereCondition)) {
         // let [key, value] = Object.entries(whereCondition[conditionKey])[0];
         if (exceptConditions.find(el => el == conditionKey) == undefined) {
@@ -81,7 +81,8 @@ const getWHERESequelize = (whereCondition) => {
     
     result[`$Sales.deposit$`] = { [Op.lte]: whereCondition['deposit'] }
     result[`$Sales.monthly_rent$`] = { [Op.lte]: whereCondition['monthly_rent'] }
-    result['$Sales.bjd$'] = "월계동"
+    result[`$Sales.deal_type$`] = whereCondition['deal_type']
+    // result['$Sales.bjd$'] = "월계동"
 
 
     // let exceptConditions = ['deposit', 'monthly_rent']

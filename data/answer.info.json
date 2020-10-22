@@ -140,12 +140,12 @@
         "list" : [
             {
                 "item_name" : "새로 지어진 집",
-                "condition_name" : "new",
+                "condition_name" : "new_building",
                 "condition_value" : true
             },
             {
                 "item_name" : "오래됐지만 타 조건이 좋은",
-                "condition_name" : "new",
+                "condition_name" : "new_building",
                 "condition_value" : false
             }
         ]
