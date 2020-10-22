@@ -1,0 +1,36 @@
+{
+    "convenience_store": {
+        "type": "hashtag",
+        "hashtag": ["#편의점", "#편의점이많은", "#주변편의점"]
+    },
+
+    "cultural_facility":{
+        "type": "hashtag",
+        "hashtag": ["#문화시설", "#문화인", "#문화생활"]
+    },
+
+    "restaurant": {
+        "type": "hashtag",
+        "hashtag": ["#맛집이많은", "#맛집", "#JMT맛집다수"]
+    },
+
+    "new_building": {
+        "type": "hashtag",
+        "hashtag": ["#새건물", "#신축", "#새아파트"]
+    },
+
+    "school": {
+        "type": "hashtag",
+        "hashtag": ["#학세권", "#학교가많은", "#교육"]
+    },
+
+    "subway": {
+        "type": "hashtag",
+        "hashtag": ["#역세권", "#지하철", "#기차"]
+    },
+
+    "traditonal_market": {
+        "type": "hashtag",
+        "hashtag": ["#전통시장", "#시장에가면", "#시장음식"]
+    }
+}

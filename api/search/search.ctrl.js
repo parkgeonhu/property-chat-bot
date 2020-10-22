@@ -2,8 +2,11 @@ import db from '../../models'
 import * as sampleRequest from './expect_request.json'
 import * as answerInfo from '../../data/answer.info.json'
 import * as duration from '../../lib/parsing/duration'
+import * as hashtag from '../../data/hashtag.json'
+import * as answerFormat from '../../data/answer.format.json';
 import { isSatisfySC } from '../../lib/surroundingInfo';
 const { Op } = require("sequelize");
+var resultMessage = JSON.stringify(answerFormat["title"]["title"])+"\n";
 
 const getUserInputByType = (paramKey, paramValue) => {
     try {
@@ -42,7 +45,8 @@ const pushConditionToDict = (target, conditionDict) => {
     }
 }
 
-const parsingParams = (params) => {
+const parsingParams = (ctx, params) => {
+    resultMessage = JSON.stringify(answerFormat["title"]["title"])+"\n";
     let whereCondition = {};
     let userCondition = {};
     for (let key of Object.keys(params)) {
@@ -60,8 +64,12 @@ const parsingParams = (params) => {
         else {
             pushConditionToDict(userCondition, condition)
         }
+        
         // console.log(condition)
     }
+
+    getHashTag(ctx, whereCondition)
+
     return {
         whereCondition,
         userCondition
@@ -102,8 +110,8 @@ const getWHERESequelize = (whereCondition) => {
 
 export const test = async ctx => {
     const params = sampleRequest.action.params;
+    const conditions=parsingParams(ctx, params)
 
-    const conditions=parsingParams(params)
     console.log(conditions)
 
     console.log(conditions["whereCondition"])
@@ -116,7 +124,7 @@ export const test = async ctx => {
             as: 'Sales'
         }]
     })
-
+    
     ctx.status = 200;
     ctx.body = JSON.stringify(result)
 }
@@ -147,14 +155,21 @@ export const getSchoolNumber = async ctx => {
 }
 
 
-export const getHashTag = async ctx => {
-
-    const hastagExample = {
-        "민대인" : "뚝배기"
-    }
+export const getHashTag = async (ctx, param) => {
     
     ctx.status = 200;
-    ctx.body = hastagExample
+
+    for(let key of await Object.keys(param)){
+        if(param[key] == true){
+            for(let hashtagKey of Object.keys(hashtag)){
+                if(hashtagKey == key){
+                    resultMessage += hashtag[hashtagKey]["hashtag"][Math.floor(Math.random()*3)]+" "
+                }
+            }
+        }
+    }
+    ctx.body = resultMessage
+
 }
 
 
