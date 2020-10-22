@@ -111,8 +111,8 @@
             },
             {
                 "item_name" : "대형마트",
-                "condition_name" : "traditional_market",
-                "condition_value" : false
+                "condition_name" : "mart",
+                "condition_value" : true
             }
         ]
     },
@@ -134,7 +134,7 @@
         ]
     },
 
-    "build_date" : {
+    "build_year" : {
         "type" : "choose",
         "is_where" : true,
         "list" : [

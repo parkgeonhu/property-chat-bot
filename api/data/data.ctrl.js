@@ -13,24 +13,30 @@ const getQuery = (item) => {
 }
 
 const getRefinedSales = (items) => {
-    //[TO-DO] build_date, new 판단 
     let refinedSales = items.map(item => {
         let deposit=util.getRefinedPrice(item['보증금액'])
         let monthly_rent=util.getRefinedPrice(item['월세금액'])
         let deal_type = "전세"
+        const build_year = parseInt(item['건축년도'])
+        let new_building=false;
+
+        if(build_year>=2010){
+            new_building=true;
+        }
 
         if(monthly_rent!=0){
             deal_type = "월세"
         }
 
         return {
-            build_date: item['건축년도'],
+            build_year: item['건축년도'],
             floor: item['층'],
             bjd: item['법정동'].trim(),
             jibun: item['지번'],
             deposit,
             monthly_rent,
-            deal_type
+            deal_type,
+            new_building
         }
     })
     return refinedSales;
@@ -127,6 +133,9 @@ const insertData = async (items) => {
                 name: item['name'],
                 x: item['x'],
                 y: item['y'],
+                new_building : item['new_building'],
+                build_year : item['build_year'],
+                mart : item['surrounding']['대형마트']['is_satisfied'],
                 restaurant : item['surrounding']['음식점']['is_satisfied'],
                 school : item['surrounding']['학교']['is_satisfied'],
                 subway: item['surrounding']['지하철역']['is_satisfied'],

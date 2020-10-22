@@ -17,6 +17,15 @@ module.exports = {
       y: {
         type: Sequelize.FLOAT
       },
+      build_year : {
+        type: Sequelize.INTEGER
+      },
+      new_building : {
+        type: Sequelize.BOOLEAN
+      },
+      mart : {
+        type: Sequelize.BOOLEAN
+      },
       subway: {
         type: Sequelize.BOOLEAN
       },

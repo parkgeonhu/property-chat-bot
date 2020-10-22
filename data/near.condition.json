@@ -28,5 +28,10 @@
     "keyword": "학교",
     "radius": 500,
     "statisfaction": 2
+  },
+  "대형마트": {
+    "keyword": "대형마트",
+    "radius": 800,
+    "statisfaction": 1
   }
 }
