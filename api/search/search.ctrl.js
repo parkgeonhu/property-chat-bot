@@ -1,10 +1,12 @@
 import db from '../../models'
 import * as sampleRequest from './expect_request.json'
+import * as aptsDuration from './expected.apts.json'
 import * as answerInfo from '../../data/answer.info.json'
 import * as duration from '../../lib/parsing/duration'
 import * as util from '../../util/index'
 import { getKeywordInfo } from '../../lib/kakaoLocal'
 import { isSatisfySC } from '../../lib/surroundingInfo';
+import { getBaseMsg } from '../../lib/message'
 const { Op } = require("sequelize");
 
 const getUserInputByType = (paramKey, paramValue) => {
@@ -152,7 +154,6 @@ const getDuration = async (userCondition, sales) => {
             ...sale,
             distance
         }
-        sale['distance'] = distance
     })
 
     sales_sorted_by_distance.sort((a, b) => {
@@ -172,20 +173,20 @@ const getDuration = async (userCondition, sales) => {
     if (commute_type == 'transit') {
         sales_sorted = await Promise.all(sales_sliced.map(async sale=>{
             return {
-                sales_sorted_by_distance,
+                ...sale,
                 duration : await duration.getTransitDuration(sale['x'], sale['y'], dx, dy)
             }
         }))
     } else if (commute_type == 'driving') {
         sales_sorted = await Promise.all(sales_sliced.map(async sale=>{
             return {
-                sales_sorted_by_distance,
+                ...sale,
                 duration : await duration.getDrivingDuration(sale['x'], sale['y'], dx, dy)
             }
         }))
     }
 
-    util.writeJSONData("getDuration", sales_sorted)
+    return sales_sorted;
 }
 
 
@@ -242,9 +243,6 @@ export const getSchoolNumber = async ctx => {
 
 export const getHashTag = async ctx => {
 
-    const hastagExample = {
-        "민대인": "뚝배기"
-    }
 
     ctx.status = 200;
     ctx.body = hastagExample
@@ -255,17 +253,32 @@ export const getHashTag = async ctx => {
 export const index = async ctx => {
     // const params = ctx.request.body.action.detailParams;
 
-    const result = await db.Apt.findAll({
-        where: {
-            subway: true,
-            '$Sales.bjd$': '월계동',
+    const params = sampleRequest.action.params;
 
+    const conditions = parsingParams(params)
+    console.log(conditions)
+
+    console.log(conditions["whereCondition"])
+
+    const dbData = await db.Apt.findAll({
+        where: {
+            '$Sales.bjd$': '월계동',
         },
         include: [{
             model: db.Sale,
             as: 'Sales'
         }]
     })
+
+    const dbDataJson = JSON.stringify(dbData)
+    const result = JSON.parse(dbDataJson)
+
+    const userCondition = conditions["userCondition"]
+    const apts = await getDuration(userCondition, result)
+
+    console.log(getBaseMsg(apts))
+
+
     // .then(users => {
     //     console.log(JSON.stringify(users));
     // })

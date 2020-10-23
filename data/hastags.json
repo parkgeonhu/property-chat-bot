@@ -1,0 +1,33 @@
+{
+	"convenience_store" : {
+		"type" : "hashtag",
+		"list" : ["#편의점", "#집이_최고야"]
+	},
+
+	"cultural_facility":{
+		"type" : "hashtag",
+		"list" : ["#문화시설", "#문화인", "#문화생활"]
+	},
+
+	"restaurant" : {
+		"type" : "hashtag",
+		"list" : ["#맛집이 많은", "#맛집"]
+	},
+
+	"school" : {
+		"type" : "hashtag",
+		"list" : ["#학세권", "#학교가많은"]
+	},
+	
+
+	"subway" : {
+		"type" : "hashtag",
+		"list" : ["#역세권", "#교통편한"]
+	},
+
+
+	"traditional_market" : {
+		"type" : "hashtag",
+		"list" : ["#전통시장", "#시장에가면"]
+	}
+}
