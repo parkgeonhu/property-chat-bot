@@ -71,7 +71,7 @@
             },
             {
                 "item_name" : "전시/영화 보기",
-                "condition_name" : "cultulral_facility",
+                "condition_name" : "cultural_facility",
                 "condition_value" : true
             },
             {

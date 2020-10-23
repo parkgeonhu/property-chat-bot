@@ -6,7 +6,7 @@ import * as duration from '../../lib/parsing/duration'
 import * as util from '../../util/index'
 import { getKeywordInfo } from '../../lib/kakaoLocal'
 import { isSatisfySC } from '../../lib/surroundingInfo';
-import { getBaseMsg } from '../../lib/message'
+import { getBaseMsg, getKakaoMsg, getKakaoSimpleMsg } from '../../lib/message'
 const { Op } = require("sequelize");
 
 const getUserInputByType = (paramKey, paramValue) => {
@@ -251,24 +251,44 @@ export const getHashTag = async ctx => {
 
 
 export const index = async ctx => {
-    // const params = ctx.request.body.action.detailParams;
+    // // const params = ctx.request.body.action.detailParams;
 
-    const params = sampleRequest.action.params;
+    // const params = sampleRequest.action.params;
+
+    // const conditions = parsingParams(params)
+    // console.log(conditions)
+
+    // console.log(conditions["whereCondition"])
+
+    // const dbData = await db.Apt.findAll({
+    //     where: {
+    //         '$Sales.bjd$': '월계동',
+    //     },
+    //     include: [{
+    //         model: db.Sale,
+    //         as: 'Sales'
+    //     }]
+    // })
+
+
+
+    const params = ctx.request.body.action.params;
 
     const conditions = parsingParams(params)
     console.log(conditions)
 
     console.log(conditions["whereCondition"])
+    const where = getWHERESequelize(conditions["whereCondition"])
 
     const dbData = await db.Apt.findAll({
-        where: {
-            '$Sales.bjd$': '월계동',
-        },
+        where,
         include: [{
             model: db.Sale,
             as: 'Sales'
         }]
     })
+
+
 
     const dbDataJson = JSON.stringify(dbData)
     const result = JSON.parse(dbDataJson)
@@ -276,7 +296,11 @@ export const index = async ctx => {
     const userCondition = conditions["userCondition"]
     const apts = await getDuration(userCondition, result)
 
-    console.log(getBaseMsg(apts))
+    const baseMsg = getBaseMsg(apts)
+    const kakaoMsg = getKakaoSimpleMsg(baseMsg)
+    util.writeJSONData("baseMsg", baseMsg)
+    util.writeJSONData("kakaoMsg", kakaoMsg)
+
 
 
     // .then(users => {
@@ -284,5 +308,5 @@ export const index = async ctx => {
     // })
 
     ctx.status = 200;
-    ctx.body = JSON.stringify(result)
+    ctx.body = kakaoMsg
 }
