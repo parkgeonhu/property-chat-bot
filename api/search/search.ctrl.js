@@ -6,7 +6,7 @@ import * as duration from '../../lib/parsing/duration'
 import * as util from '../../util/index'
 import { getKeywordInfo } from '../../lib/kakaoLocal'
 import { isSatisfySC } from '../../lib/surroundingInfo';
-import { getBaseMsg, getKakaoMsg, getKakaoSimpleMsg } from '../../lib/message'
+import { getBaseMsg, getKakaoSimpleMsg } from '../../lib/message'
 const { Op } = require("sequelize");
 
 const getUserInputByType = (paramKey, paramValue) => {
@@ -78,6 +78,10 @@ const getWHERESequelize = (whereCondition) => {
     for (let conditionKey of Object.keys(whereCondition)) {
         // let [key, value] = Object.entries(whereCondition[conditionKey])[0];
         if (exceptConditions.find(el => el == conditionKey) == undefined) {
+            //answer.info의 condition_value 가 false일 때는 조건에 넣어주지 않는다.
+            if (whereCondition[conditionKey] == false) {
+                continue;
+            }
             result[conditionKey] = whereCondition[conditionKey]
         }
     }
@@ -137,9 +141,7 @@ const getDuration = async (userCondition, sales) => {
     const destination = await getDestinationInfo(commute_location)
     if (destination['is_valid'] == false) {
         //통근 주소가 잘못됐다는 반려폼 들어가야함
-        return {
-
-        }
+        throw ("address error")
     }
 
     console.log(destination)
@@ -157,36 +159,36 @@ const getDuration = async (userCondition, sales) => {
     })
 
     sales_sorted_by_distance.sort((a, b) => {
-        if(a.distance < b.distance){
+        if (a.distance < b.distance) {
             return -1;
-        }else if(a.distance > b.distance){
+        } else if (a.distance > b.distance) {
             return 1;
-        } 
+        }
         return 0;
     })
 
     console.log(sales_sorted_by_distance)
 
-    let sales_sliced = sales_sorted_by_distance.slice(0,10)
+    let sales_sliced = sales_sorted_by_distance.slice(0, 5)
 
     let sales_sorted;
     if (commute_type == 'transit') {
-        sales_sorted = await Promise.all(sales_sliced.map(async sale=>{
+        sales_sorted = await Promise.all(sales_sliced.map(async sale => {
             return {
                 ...sale,
-                duration : await duration.getTransitDuration(sale['x'], sale['y'], dx, dy)
+                duration: await duration.getTransitDuration(sale['x'], sale['y'], dx, dy)
             }
         }))
     } else if (commute_type == 'driving') {
-        sales_sorted = await Promise.all(sales_sliced.map(async sale=>{
+        sales_sorted = await Promise.all(sales_sliced.map(async sale => {
             return {
                 ...sale,
-                duration : await duration.getDrivingDuration(sale['x'], sale['y'], dx, dy)
+                duration: await duration.getDrivingDuration(sale['x'], sale['y'], dx, dy)
             }
         }))
     }
 
-    return sales_sorted;
+    return sales_sorted.filter(el => el.duration <= commute_time);
 }
 
 
@@ -201,7 +203,7 @@ export const test = async ctx => {
 
     const result = await db.Apt.findAll({
         where,
-        raw:true,
+        raw: true,
         include: [{
             model: db.Sale,
             as: 'Sales'
@@ -309,4 +311,55 @@ export const index = async ctx => {
 
     ctx.status = 200;
     ctx.body = kakaoMsg
+}
+
+export const kakao = async ctx => {
+    const params = sampleRequest.action.params;
+    //const params = ctx.request.body.action.params;
+
+
+    const conditions = parsingParams(params)
+    console.log(conditions)
+
+    const where = getWHERESequelize(conditions["whereCondition"])
+
+    const dbData = await db.Apt.findAll({
+        where,
+        include: [{
+            model: db.Sale,
+            as: 'Sales'
+        }]
+    })
+
+
+
+    const dbDataJson = JSON.stringify(dbData)
+    const result = JSON.parse(dbDataJson)
+
+    const userCondition = conditions["userCondition"]
+    try {
+        const apts = await getDuration(userCondition, result)
+
+        const baseMsg = getBaseMsg(apts)
+        const kakaoMsg = getKakaoSimpleMsg(baseMsg)
+        util.writeJSONData("baseMsg", baseMsg)
+        util.writeJSONData("kakaoMsg", kakaoMsg)
+        ctx.status = 200;
+        ctx.body = kakaoMsg
+    } catch (err) {
+        console.error(err)
+        ctx.status = 400;
+        ctx.body = {
+            message: err
+        }
+    }
+
+
+
+
+    // .then(users => {
+    //     console.log(JSON.stringify(users));
+    // })
+
+
 }

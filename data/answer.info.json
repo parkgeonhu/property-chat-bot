@@ -28,28 +28,19 @@
         "is_where" : false,
         "list" : [
             {
-                "item_name" : "15~30분",
+                "item_name" : "30분 이내",
                 "condition_name" : "commute_time",
-                "condition_value" : {
-                    "gte" : 15,
-                    "lte" : 30
-                }
+                "condition_value" : 30
             },
             {
-                "item_name" : "30~60분",
+                "item_name" : "1시간 이내",
                 "condition_name" : "commute_time",
-                "condition_value" : {
-                    "gte" : 30,
-                    "lte" : 60
-                }
+                "condition_value" : 60
             },
             {
                 "item_name" : "상관없음",
                 "condition_name" : "commute_time",
-                "condition_value" : {
-                    "gte" : 60,
-                    "lte" : 9000
-                }
+                "condition_value" : 9000
             }
         ]
     },
@@ -113,6 +104,11 @@
                 "item_name" : "대형마트",
                 "condition_name" : "mart",
                 "condition_value" : true
+            },
+            {
+                "item_name" : "상관없음",
+                "condition_name" : "none",
+                "condition_value" : false
             }
         ]
     },
@@ -129,7 +125,7 @@
             {
                 "item_name" : "적었으면",
                 "condition_name" : "school",
-                "condition_value" : true
+                "condition_value" : false
             }
         ]
     },
@@ -161,9 +157,9 @@
                 "condition_value" : true
             },
             {
-                "item_name" : "딱 맞게",
+                "item_name" : "일찍",
                 "condition_name" : "subway",
-                "condition_value" : true
+                "condition_value" : false
             }
         ]
     },

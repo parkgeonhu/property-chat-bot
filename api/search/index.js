@@ -8,6 +8,7 @@ search.get('/test', searchCtrl.test);
 search.get('/duration', searchCtrl.durationTest);
 search.get('/hashtag', searchCtrl.getHashTag);
 search.get('/school', searchCtrl.getSchoolNumber);
+search.get('/kakao', searchCtrl.kakao);
 
 
 
