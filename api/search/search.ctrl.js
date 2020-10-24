@@ -87,8 +87,8 @@ const getWHERESequelize = (whereCondition) => {
     }
 
 
-    result[`$Sales.deposit$`] = { [Op.lte]: whereCondition['deposit'] }
-    result[`$Sales.monthly_rent$`] = { [Op.lte]: whereCondition['monthly_rent'] }
+    result[`$Sales.deposit$`] = { [Op.lte]: whereCondition['deposit']/10000 }
+    result[`$Sales.monthly_rent$`] = { [Op.lte]: whereCondition['monthly_rent']/10000 }
     result[`$Sales.deal_type$`] = whereCondition['deal_type']
     // result['$Sales.bjd$'] = "월계동"
 
@@ -314,8 +314,8 @@ export const index = async ctx => {
 }
 
 export const kakao = async ctx => {
-    const params = sampleRequest.action.params;
-    //const params = ctx.request.body.action.params;
+    // const params = sampleRequest.action.params;
+    const params = ctx.request.body.action.params;
 
 
     const conditions = parsingParams(params)
