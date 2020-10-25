@@ -1,6 +1,5 @@
 import db from '../../models'
-import * as sampleRequest from './expect_request.json'
-import * as aptsDuration from './expected.apts.json'
+import * as sampleRequest from '../../data/expected.kakao_request.json'
 import * as answerInfo from '../../data/answer.info.json'
 import * as duration from '../../lib/parsing/duration'
 import * as util from '../../util/index'
@@ -87,23 +86,10 @@ const getWHERESequelize = (whereCondition) => {
     }
 
 
-    result[`$Sales.deposit$`] = { [Op.lte]: whereCondition['deposit']/10000 }
-    result[`$Sales.monthly_rent$`] = { [Op.lte]: whereCondition['monthly_rent']/10000 }
+    result[`$Sales.deposit$`] = { [Op.lte]: whereCondition['deposit'] / 10000 }
+    result[`$Sales.monthly_rent$`] = { [Op.lte]: whereCondition['monthly_rent'] / 10000 }
     result[`$Sales.deal_type$`] = whereCondition['deal_type']
-    // result['$Sales.bjd$'] = "월계동"
 
-
-    // let exceptConditions = ['deposit', 'monthly_rent']
-    // for (let condition of whereCondition) {
-    //     let [key, value] = Object.entries(condition)[0];
-    //     if (exceptConditions.find(el => el == key) != undefined) {
-    //         result[key] = value
-    //     }
-    //     else{
-    //         result[`$Sales.${key}$`] = { [Op.gte]: 3000 }
-    //     }
-
-    // }
     return result;
 }
 
@@ -167,8 +153,6 @@ const getDuration = async (userCondition, sales) => {
         return 0;
     })
 
-    console.log(sales_sorted_by_distance)
-
     let sales_sliced = sales_sorted_by_distance.slice(0, 5)
 
     let sales_sorted;
@@ -194,130 +178,6 @@ const getDuration = async (userCondition, sales) => {
 
 export const test = async ctx => {
     const params = sampleRequest.action.params;
-
-    const conditions = parsingParams(params)
-    console.log(conditions)
-
-    console.log(conditions["whereCondition"])
-    const where = getWHERESequelize(conditions["whereCondition"])
-
-    const result = await db.Apt.findAll({
-        where,
-        raw: true,
-        include: [{
-            model: db.Sale,
-            as: 'Sales'
-        }]
-    })
-
-    const userCondition = conditions["userCondition"]
-    await getDuration(userCondition, result)
-
-    ctx.status = 200;
-    ctx.body = JSON.stringify(result)
-}
-
-export const durationTest = async ctx => {
-
-    const driving = await duration.getDrivingDuration(127.07703045060357, 37.63906582026493, 126.996969239236, 37.6107638961532)
-    const transit = await duration.getTransitDuration(127.07703045060357, 37.63906582026493, 126.996969239236, 37.6107638961532)
-
-    console.log(driving, transit)
-
-    ctx.status = 200;
-    ctx.body = {
-        driving,
-        transit
-    }
-}
-
-
-export const getSchoolNumber = async ctx => {
-
-    console.log(await isSatisfySC(127.07703045060357, 37.63906582026493))
-
-    ctx.status = 200;
-    ctx.body = {
-        "status": "success"
-    }
-}
-
-
-export const getHashTag = async ctx => {
-
-
-    ctx.status = 200;
-    ctx.body = hastagExample
-}
-
-
-
-export const index = async ctx => {
-    // // const params = ctx.request.body.action.detailParams;
-
-    // const params = sampleRequest.action.params;
-
-    // const conditions = parsingParams(params)
-    // console.log(conditions)
-
-    // console.log(conditions["whereCondition"])
-
-    // const dbData = await db.Apt.findAll({
-    //     where: {
-    //         '$Sales.bjd$': '월계동',
-    //     },
-    //     include: [{
-    //         model: db.Sale,
-    //         as: 'Sales'
-    //     }]
-    // })
-
-
-
-    const params = ctx.request.body.action.params;
-
-    const conditions = parsingParams(params)
-    console.log(conditions)
-
-    console.log(conditions["whereCondition"])
-    const where = getWHERESequelize(conditions["whereCondition"])
-
-    const dbData = await db.Apt.findAll({
-        where,
-        include: [{
-            model: db.Sale,
-            as: 'Sales'
-        }]
-    })
-
-
-
-    const dbDataJson = JSON.stringify(dbData)
-    const result = JSON.parse(dbDataJson)
-
-    const userCondition = conditions["userCondition"]
-    const apts = await getDuration(userCondition, result)
-
-    const baseMsg = getBaseMsg(apts)
-    const kakaoMsg = getKakaoSimpleMsg(baseMsg)
-    util.writeJSONData("baseMsg", baseMsg)
-    util.writeJSONData("kakaoMsg", kakaoMsg)
-
-
-
-    // .then(users => {
-    //     console.log(JSON.stringify(users));
-    // })
-
-    ctx.status = 200;
-    ctx.body = kakaoMsg
-}
-
-export const kakao = async ctx => {
-    // const params = sampleRequest.action.params;
-    const params = ctx.request.body.action.params;
-
-
     const conditions = parsingParams(params)
     console.log(conditions)
 
@@ -353,13 +213,58 @@ export const kakao = async ctx => {
             message: err
         }
     }
+}
+
+export const durationTest = async ctx => {
+
+    const driving = await duration.getDrivingDuration(127.07703045060357, 37.63906582026493, 126.996969239236, 37.6107638961532)
+    const transit = await duration.getTransitDuration(127.07703045060357, 37.63906582026493, 126.996969239236, 37.6107638961532)
+
+    console.log(driving, transit)
+
+    ctx.status = 200;
+    ctx.body = {
+        driving,
+        transit
+    }
+}
+
+export const index = async ctx => {
+    // const params = sampleRequest.action.params;
+    const params = ctx.request.body.action.params;
+
+
+    const conditions = parsingParams(params)
+    console.log(conditions)
+
+    const where = getWHERESequelize(conditions["whereCondition"])
+
+    const dbData = await db.Apt.findAll({
+        where,
+        include: [{
+            model: db.Sale,
+            as: 'Sales'
+        }]
+    })
 
 
 
+    const dbDataJson = JSON.stringify(dbData)
+    const result = JSON.parse(dbDataJson)
 
-    // .then(users => {
-    //     console.log(JSON.stringify(users));
-    // })
+    const userCondition = conditions["userCondition"]
+    try {
+        const apts = await getDuration(userCondition, result)
 
-
+        const baseMsg = getBaseMsg(apts)
+        const kakaoMsg = getKakaoSimpleMsg(baseMsg)
+        ctx.status = 200;
+        ctx.body = kakaoMsg
+    } catch (err) {
+        console.error(err)
+        ctx.status = 400;
+        ctx.body = {
+            message: err
+        }
+    }
 }

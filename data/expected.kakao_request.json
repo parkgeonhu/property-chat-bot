@@ -26,7 +26,7 @@
             "commute_location": "용산시티파크1단지아파트",
             "monthly_rent": "{\"amount\": 0, \"unit\": \"원\"}",
             "commute_type": "대중교통",
-            "deposit": "{\"amount\": 300000, \"unit\": \"원\"}",
+            "deposit": "{\"amount\": 300000000, \"unit\": \"원\"}",
             "deal_type": "전세",
             "phone": "01012345678"
         },

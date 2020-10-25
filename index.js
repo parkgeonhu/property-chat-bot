@@ -3,7 +3,6 @@ import Koa from 'koa';
 import Router from "koa-router";
 import bodyParser from 'koa-bodyparser';
 import api from './api/index.js';
-//import jwtMiddleware from './lib/jwtMiddleware.js';
 import errorHandler, {HttpError} from './lib/errorHandler';
 import cors from 'koa2-cors';
 const app = new Koa();
@@ -12,7 +11,6 @@ const router = new Router();
 router.use('/api', api.routes());
 app.use(cors());
 app.use(bodyParser());
-//app.use(jwtMiddleware);
 app.use(errorHandler);
 app.use(router.routes()).use(router.allowedMethods());
 
